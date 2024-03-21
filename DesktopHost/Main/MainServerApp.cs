@@ -41,13 +41,13 @@ namespace Main
             IPHostEntry ipEntry = Dns.GetHostEntry(hostName);
             foreach (IPAddress ip in ipEntry.AddressList)
             {
-                // 筛选出IPv4地址
                 if (ip.AddressFamily == AddressFamily.InterNetwork)
                 {
                     Global.ServerIP = ip.ToString();
                 }
             }
-            Global.HostName = hostName; 
+            Global.HostName = hostName;
+            ScreenExt.Init(Global.setting.GetCaptureRectangle(), (long)Convert.ToInt32(Global.setting.StreamingQuality));
         }
         protected override void OnConnectionRequestEvent(ConnectionRequest request)
         {
@@ -58,6 +58,7 @@ namespace Main
             base.OnNetworkReceiveUnconnectedEvent(remoteEndPoint, reader, messageType);
             byte[] bytes = new byte[reader.AvailableBytes];
             reader.GetBytes(bytes, reader.AvailableBytes);
+            Logger.Log($"Receive unconnected event {remoteEndPoint}");
             PtMessagePackage package = PtMessagePackage.Read(bytes);
             EventDispatcher<C2S, UnconnectedNetMessageEvt>.DispatchEvent((C2S)package.MessageId, new UnconnectedNetMessageEvt(remoteEndPoint, package.Content));
             reader.Recycle();

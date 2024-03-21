@@ -1,4 +1,6 @@
-﻿namespace Main.Ext
+﻿using System.Drawing;
+
+namespace Main.Ext
 {
     public class Setting
     {
@@ -12,6 +14,11 @@
         public override string ToString()
         {
             return $"HostPort:{HostPort} StreamingPort:{StreamingPort} Capture:{CaptureX} {CaptureY} {CaptureWidth} {CaptureHeight} StreamingQuality:{StreamingQuality}";
+        }
+
+        public Rectangle GetCaptureRectangle()
+        {
+            return new Rectangle(CaptureX, CaptureY, CaptureWidth, CaptureHeight);
         }
     }
 }

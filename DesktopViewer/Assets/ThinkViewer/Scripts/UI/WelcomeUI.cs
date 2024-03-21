@@ -25,7 +25,6 @@ namespace Think.Viewer.UI
             IPHostEntry ipEntry = Dns.GetHostEntry(hostName);
             foreach (IPAddress ip in ipEntry.AddressList)
             {
-                // É¸Ñ¡³öIPv4µØÖ·
                 if (ip.AddressFamily == AddressFamily.InterNetwork)
                 {
                     interNetworkIp = ip;
@@ -42,15 +41,21 @@ namespace Think.Viewer.UI
         }
         void OnSelectRender(RecyclingItem.RecyclingEvent evt)
         {
-            listRender.RefreshDataProvider();
+            switch (evt.Type)
+            {
+                case HostItem.Start_Streaming:
+
+                    break;
+                default:
+                    break;
+            }
         }
         public void OnClickSearch()
         {
             for(int i = 1; i < 256; ++i)
             {
                 IPAddress ip = IPAddress.Parse($"{interNetworkIpBytes[0]}.{interNetworkIpBytes[1]}.{interNetworkIpBytes[2]}.{i}");
-                IPEndPoint iPEndPoint = new IPEndPoint(ip, 7999);
-                GameClientNetwork.Instance.SendUnconnectedRequest(PtMessagePackage.Build((ushort)C2S.SearchHost),iPEndPoint);
+                GameClientNetwork.Instance.SendUnconnectedRequest(PtMessagePackage.Build((ushort)C2S.SearchHost), new IPEndPoint(ip, 7999));
             }
         }
         public override void OnInit()

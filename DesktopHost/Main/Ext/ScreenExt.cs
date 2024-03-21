@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SevenZip.Compression.LZMA;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -10,26 +11,27 @@ namespace Main.Ext
 {
     internal class ScreenExt
     {
+        static Rectangle screenBounds = new Rectangle(0, 0, 2240, 1400);
+        static Bitmap screenshot;
+        static ImageCodecInfo jpegEncoder;
+        static EncoderParameters encoderParameters = new EncoderParameters(1);
+        static EncoderParameter encoderParameter;
+        public static void Init(Rectangle screenRect,long quality = 20L)
+        {
+            screenBounds = screenRect;
+            screenshot = new Bitmap(screenBounds.Width, screenBounds.Height, PixelFormat.Format32bppArgb);
+            jpegEncoder = GetEncoder(ImageFormat.Jpeg);
+            encoderParameter = new EncoderParameter(System.Drawing.Imaging.Encoder.Quality, quality);
+            encoderParameters.Param[0] = encoderParameter;
+        }
         public static byte[] CaptureScreenBytes()
         {
-            Rectangle bounds = new Rectangle(0, 0, 2240, 1400);
-            //Rectangle bounds = new Rectangle(0, 0, 2240/2, 1400/2);
-            Bitmap screenshot = new Bitmap(bounds.Width, bounds.Height, PixelFormat.Format32bppArgb);
             Graphics graphics = Graphics.FromImage(screenshot);
-            graphics.CopyFromScreen(bounds.X, bounds.Y, 0, 0, bounds.Size, CopyPixelOperation.SourceCopy);
-
-
-            var jpegEncoder = GetEncoder(ImageFormat.Jpeg);
-            System.Drawing.Imaging.Encoder myEncoder = System.Drawing.Imaging.Encoder.Quality;
-            EncoderParameters encoderParameters = new EncoderParameters(1);
-            EncoderParameter encoderParameter = new EncoderParameter(myEncoder, 20L);
-            encoderParameters.Param[0] = encoderParameter;
-
-
+            graphics.CopyFromScreen(screenBounds.X, screenBounds.Y, 0, 0, screenBounds.Size, CopyPixelOperation.SourceCopy);
+            
             using (var ms = new MemoryStream())
             {
                 screenshot.Save(ms, jpegEncoder, encoderParameters);
-
                 var raw = new byte[ms.Length];
                 ms.Seek(0, SeekOrigin.Begin);
                 ms.Read(raw, 0, raw.Length);
