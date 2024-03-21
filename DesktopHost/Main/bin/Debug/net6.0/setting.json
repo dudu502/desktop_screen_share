@@ -1,0 +1,9 @@
+{
+	"HostPort":7999,
+	"StreamingPort":8000,
+	"CaptureX":0,
+	"CaptureY":0,
+	"CaptureWidth":2240,
+	"CaptureHeight":1400,
+	"StreamingQuality":"12"
+}
