@@ -15,73 +15,32 @@ namespace Main.Modules.Host
 {
     public class CaptureHostModule : BaseModule
     {
-        public string hostName;
-        public IPAddress interNetworkIp;
         TcpListener listener;
-        public Thread requestThread;
-        public Thread captureScreenThread;
-        public Thread receiveThread;
+        Thread requestThread;
+        Thread captureScreenThread;
+
         bool running;
         public bool streaming;
         Stream stream;
+ 
         public CaptureHostModule(BaseApplication app) : base(app)
         {
-            hostName = Dns.GetHostName();
-            IPHostEntry ipEntry = Dns.GetHostEntry(hostName);
-            foreach (IPAddress ip in ipEntry.AddressList)
-            {
-                // 筛选出IPv4地址
-                if (ip.AddressFamily == AddressFamily.InterNetwork)
-                {
-                    interNetworkIp = ip;
-                }
-            }
+            requestThread = new Thread(RequestThreadStart); 
+            captureScreenThread = new Thread(CaptureScreenThreadStart);
         }
 
         public void Start()
         {
             int port = 8000;
             if (Global.setting != null)
-                port = Global.setting.HostPort;
-            listener = new TcpListener(interNetworkIp, port);
+                port = Global.setting.StreamingPort;
+            listener = new TcpListener(IPAddress.Parse(Global.ServerIP), port);
             listener.Start();
             running = true;
-            requestThread = new Thread(RequestThreadStart);
             requestThread.Start();
-            captureScreenThread = new Thread(CaptureScreenThreadStart);
             captureScreenThread.Start();
-            receiveThread = new Thread(ReceiveThreadStart);
-
         }
-        void ReceiveThreadStart()
-        {
-            while (running)
-            {
-                if (stream != null && stream.CanRead)
-                {
-                    byte[] bytes4 = new byte[4];
-                    try
-                    {
-                        stream.Read(bytes4, 0, 4);
-                        stream.Read(bytes4, 0, 4);
-                        int pid = BitConverter.ToInt32(bytes4, 0);
-                        stream.Read(bytes4, 0, 4);
-                        int rawLen = BitConverter.ToInt32(bytes4, 0);
-                        byte[] raw = null;
-                        if (rawLen > 0)
-                        {
-                            raw = new byte[rawLen];
-                            stream.Read(raw, 0, rawLen);
-                        }
-                        EventDispatcher<int, Request>.DispatchEvent(pid, new Request(stream, pid, raw));
-                    }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine(e);
-                    }
-                }
-            }
-        }
+      
         void CaptureScreenThreadStart()
         {
             while (running && streaming)
@@ -120,7 +79,7 @@ namespace Main.Modules.Host
                 Console.WriteLine("Client Accpet");
                 stream = tcpClient.GetStream();
                 accept = true;
-                receiveThread.Start();
+
                 // save client to dict;
 
                 //while (true)

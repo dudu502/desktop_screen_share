@@ -46,6 +46,7 @@ namespace Main.Modules.Host
         void OnStartStreaming(UnconnectedNetMessageEvt package)
         {
             Log($"{nameof(OnStartStreaming)} {package.RemoteEndPoint.ToString()}");
+            //Start capture service
         }
 
     }
