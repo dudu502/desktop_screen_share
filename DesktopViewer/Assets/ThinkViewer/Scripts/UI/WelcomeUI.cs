@@ -10,6 +10,7 @@ using Think.Viewer.Common;
 using Think.Viewer.Recycling;
 using Think.Viewer.Manager;
 using Think.Viewer.Event;
+using ThinkViewer.Scripts.Net.Data;
 
 namespace Think.Viewer.UI
 {
@@ -44,7 +45,8 @@ namespace Think.Viewer.UI
             switch (evt.Type)
             {
                 case HostItem.Start_Streaming:
-
+                    HostNetInfo hostNetInfo = evt.Target as HostNetInfo;
+                    GameClientNetwork.Instance.SendUnconnectedRequest(PtMessagePackage.Build((ushort)C2S.StartStreaming), hostNetInfo.EndPoint);
                     break;
                 default:
                     break;

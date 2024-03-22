@@ -28,13 +28,24 @@ namespace Main.Modules.Host
         public RequestProcessModule(BaseApplication app) : base(app)
         {
             EventDispatcher<C2S, UnconnectedNetMessageEvt>.AddListener(C2S.SearchHost, OnSearchHost);
+            EventDispatcher<C2S, UnconnectedNetMessageEvt>.AddListener(C2S.StartStreaming, OnStartStreaming);
         }
-
+        
         void OnSearchHost(UnconnectedNetMessageEvt package)
         {
-            string response = Global.ServerIP + ":" + Global.setting.StreamingPort;
+            Log($"{nameof(OnSearchHost)} {package.RemoteEndPoint.ToString()}");
             string hostName = Global.HostName;
-            package.Reply(GetNetManager(), PtMessagePackage.Write( PtMessagePackage.BuildParams((ushort)S2C.SearchHost, response, hostName)));
+            string ip = Global.ServerIP;// + ":" + Global.setting.StreamingPort;
+            int hostPort = Global.setting.HostPort;
+            int streamingPort = Global.setting.StreamingPort;
+          
+            package.Reply(GetNetManager(), PtMessagePackage.Write( PtMessagePackage.BuildParams((ushort)S2C.SearchHost, hostName,ip,hostPort,streamingPort)));
+        }
+
+
+        void OnStartStreaming(UnconnectedNetMessageEvt package)
+        {
+            Log($"{nameof(OnStartStreaming)} {package.RemoteEndPoint.ToString()}");
         }
 
     }

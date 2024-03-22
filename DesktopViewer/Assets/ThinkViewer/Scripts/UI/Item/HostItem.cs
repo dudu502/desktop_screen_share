@@ -13,7 +13,7 @@ public class HostItem : RecyclingItem
     public TMPro.TMP_Text Name;
     void Start()
     {
-        DispatchEvent(Start_Streaming);
+        Connect.onClick.AddListener(()=>DispatchEvent(Start_Streaming));
     }
     protected override void OnRenderer()
     {
