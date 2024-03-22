@@ -26,13 +26,14 @@ namespace Think.Viewer.Module
         {
             using (ByteBuffer buffer = new ByteBuffer(message.Content))
             {
-                string ip = buffer.ReadString();
                 string hostName = buffer.ReadString();
-                Debug.LogWarning(ip);
+                string ip = buffer.ReadString();
+                int hostPort = buffer.ReadInt32();
+                int streamingPort = buffer.ReadInt32();
+     
                 if(hostNetInfos.Find(item=>item.Ip == ip) == null)
                 {
-                    hostNetInfos.Add(new HostNetInfo(ip, hostName));
-
+                    hostNetInfos.Add(new HostNetInfo(hostName,ip,hostPort,streamingPort));
                     UnityLooper.Execute(()=>EventDispatcher<MessageEvent, object>.DispatchEvent(MessageEvent.HostNetInfosUpdated, null));
                 }
             }

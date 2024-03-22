@@ -58,26 +58,27 @@
     <Analyzer Include="C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\Extensions\Microsoft\Visual Studio Tools for Unity\Analyzers\Microsoft.Unity.Analyzers.dll" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\ThinkViewer\Module\MessageModule.cs" />
-    <Compile Include="Assets\ThinkViewer\Scripts\Application.cs" />
-    <Compile Include="Assets\ThinkViewer\Scripts\ModuleManager.cs" />
-    <Compile Include="Assets\ThinkViewer\Scripts\Net\NetworkController.cs" />
-    <Compile Include="Assets\ThinkViewer\Module\UIModule.cs" />
-    <Compile Include="Assets\ThinkViewer\Scripts\Net\GameClientNetwork.cs" />
-    <Compile Include="Assets\ThinkViewer\Module\UIView.cs" />
-    <Compile Include="Assets\ThinkViewer\Scripts\UI\WelcomeUI.cs" />
-    <Compile Include="Assets\RecyclingList\Scripts\Samples\MyFlexibleItem.cs" />
-    <Compile Include="Assets\RecyclingList\Scripts\RecyclingItem.cs" />
-    <Compile Include="Assets\RecyclingList\Scripts\FlexibleSingleColumnItem.cs" />
-    <Compile Include="Assets\RecyclingList\Scripts\Samples\MyRecyItem.cs" />
-    <Compile Include="Assets\RecyclingList\Scripts\RecyclingListRenderer.cs" />
-    <Compile Include="Assets\RecyclingList\Scripts\FlexibleSingleColumnListRenderer.cs" />
-    <Compile Include="Assets\RecyclingList\Scripts\Samples\ListPanelForTest.cs" />
-    <Compile Include="Assets\ThinkViewer\Scripts\UI\Item\HostItem.cs" />
-    <Compile Include="Assets\ThinkViewer\Scripts\UI\UITypes.cs" />
-    <Compile Include="Assets\ThinkViewer\UnityLooper.cs" />
     <Compile Include="Assets\ThinkViewer\Scripts\Net\Data\HostNetInfo.cs" />
+    <Compile Include="Assets\ThinkViewer\UnityLooper.cs" />
+    <Compile Include="Assets\RecyclingList\Scripts\RecyclingListRenderer.cs" />
+    <Compile Include="Assets\ThinkViewer\Module\UIView.cs" />
+    <Compile Include="Assets\ThinkViewer\Module\MessageModule.cs" />
+    <Compile Include="Assets\ThinkViewer\Scripts\Net\GameClientNetwork.cs" />
+    <Compile Include="Assets\ThinkViewer\Scripts\UI\WelcomeUI.cs" />
+    <Compile Include="Assets\RecyclingList\Scripts\RecyclingItem.cs" />
+    <Compile Include="Assets\ThinkViewer\Scripts\UI\UITypes.cs" />
+    <Compile Include="Assets\RecyclingList\Scripts\FlexibleSingleColumnItem.cs" />
+    <Compile Include="Assets\RecyclingList\Scripts\FlexibleSingleColumnListRenderer.cs" />
+    <Compile Include="Assets\ThinkViewer\Scripts\Application.cs" />
+    <Compile Include="Assets\RecyclingList\Scripts\Samples\MyRecyItem.cs" />
+    <Compile Include="Assets\RecyclingList\Scripts\Samples\ListPanelForTest.cs" />
+    <Compile Include="Assets\ThinkViewer\Module\UIModule.cs" />
+    <Compile Include="Assets\ThinkViewer\Scripts\ModuleManager.cs" />
+    <Compile Include="Assets\RecyclingList\Scripts\Samples\MyFlexibleItem.cs" />
     <Compile Include="Assets\ThinkViewer\Scripts\UI\StreamingUI.cs" />
+    <Compile Include="Assets\ThinkViewer\Scripts\UI\Item\HostItem.cs" />
+    <Compile Include="Assets\ThinkViewer\Scripts\Net\NetworkController.cs" />
+    <Compile Include="Assets\ThinkViewer\Scripts\ImageLoader.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\TextMesh Pro\Shaders\TMPro.cginc" />
