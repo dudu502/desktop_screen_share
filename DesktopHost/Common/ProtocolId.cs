@@ -11,12 +11,14 @@ namespace Think.Viewer.Common
         Heartbeat,
         SearchHost,
         StartStreaming,
+        SetStreamingIndex,
         StopStreaming,
     }
     public enum S2C
     {
         SearchHost,
         StartStreaming,
+        Accepted,
         Streaming,
         StopStreaming
     }

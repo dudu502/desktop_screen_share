@@ -1,5 +1,6 @@
 ﻿using Development.Net.Pt;
 using Net;
+using Protocol.Net;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -46,7 +47,15 @@ namespace Main.Modules.Host
         void OnStartStreaming(UnconnectedNetMessageEvt package)
         {
             Log($"{nameof(OnStartStreaming)} {package.RemoteEndPoint.ToString()}");
+            using(ByteBuffer byteBuffer = new ByteBuffer(package.Content))
+            {
+                var uuid = byteBuffer.ReadString();
+                Log($"{nameof(OnStartStreaming)} UUID:{uuid}");
+                GetModule<CaptureHostModule>().TryStart(uuid);
+            }
             //Start capture service
+            string settingsJson = LitJson.JsonMapper.ToJson(Global.setting);
+            package.Reply(GetNetManager(), PtMessagePackage.Write(PtMessagePackage.BuildParams((ushort)S2C.StartStreaming, settingsJson)));
         }
 
     }

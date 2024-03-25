@@ -60,10 +60,12 @@
   <ItemGroup>
     <Compile Include="Assets\ThinkViewer\Scripts\Net\Data\HostNetInfo.cs" />
     <Compile Include="Assets\ThinkViewer\UnityLooper.cs" />
+    <Compile Include="Assets\ThinkViewer\Scripts\ImageLoader.cs" />
     <Compile Include="Assets\RecyclingList\Scripts\RecyclingListRenderer.cs" />
     <Compile Include="Assets\ThinkViewer\Module\UIView.cs" />
     <Compile Include="Assets\ThinkViewer\Module\MessageModule.cs" />
     <Compile Include="Assets\ThinkViewer\Scripts\Net\GameClientNetwork.cs" />
+    <Compile Include="Assets\ThinkViewer\Module\StreamingModule.cs" />
     <Compile Include="Assets\ThinkViewer\Scripts\UI\WelcomeUI.cs" />
     <Compile Include="Assets\RecyclingList\Scripts\RecyclingItem.cs" />
     <Compile Include="Assets\ThinkViewer\Scripts\UI\UITypes.cs" />
@@ -78,7 +80,7 @@
     <Compile Include="Assets\ThinkViewer\Scripts\UI\StreamingUI.cs" />
     <Compile Include="Assets\ThinkViewer\Scripts\UI\Item\HostItem.cs" />
     <Compile Include="Assets\ThinkViewer\Scripts\Net\NetworkController.cs" />
-    <Compile Include="Assets\ThinkViewer\Scripts\ImageLoader.cs" />
+    <Compile Include="Assets\ThinkViewer\Module\DataModule.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\TextMesh Pro\Shaders\TMPro.cginc" />
@@ -94,6 +96,7 @@
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF.shader" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile SSD.shader" />
     <None Include="Assets\TextMesh Pro\Resources\LineBreaking Leading Characters.txt" />
+    <None Include="Assets\ThinkViewer\Plugins\LitJson.dll" />
     <None Include="Assets\TextMesh Pro\Shaders\TMPro_Properties.cginc" />
     <None Include="Assets\TextMesh Pro\Shaders\TMPro_Surface.cginc" />
     <None Include="Assets\TextMesh Pro\Resources\LineBreaking Following Characters.txt" />
@@ -443,6 +446,10 @@
     </Reference>
     <Reference Include="ReportGeneratorMerged">
       <HintPath>Library\PackageCache\com.unity.testtools.codecoverage@1.2.4\lib\ReportGenerator\ReportGeneratorMerged.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="LitJson">
+      <HintPath>Assets\ThinkViewer\Plugins\LitJson.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.Android.Types">

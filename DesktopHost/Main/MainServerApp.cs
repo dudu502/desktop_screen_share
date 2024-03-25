@@ -4,6 +4,7 @@ using Main.Modules.Host;
 using Net;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -47,7 +48,8 @@ namespace Main
                 }
             }
             Global.HostName = hostName;
-            ScreenExt.Init(Global.setting.GetCaptureRectangle(), (long)Convert.ToInt32(Global.setting.StreamingQuality));
+            Rectangle rectangle = new Rectangle(Global.setting.CaptureX, Global.setting.CaptureY, Global.setting.CaptureWidth, Global.setting.CaptureHeight);
+            ScreenExt.Init(rectangle, (long)Convert.ToInt32(Global.setting.StreamingQuality));
         }
         protected override void OnConnectionRequestEvent(ConnectionRequest request)
         {

@@ -15,91 +15,71 @@ namespace Main.Modules.Host
 {
     public class CaptureHostModule : BaseModule
     {
-        TcpListener listener;
-        Thread requestThread;
-        Thread captureScreenThread;
-
-        bool running;
-        public bool streaming;
-        Stream stream;
- 
+        public bool IsRunning = false;
+        private Dictionary<string, StreamingProcessGroup> streamingProcessDict;
         public CaptureHostModule(BaseApplication app) : base(app)
         {
-            requestThread = new Thread(RequestThreadStart); 
-            captureScreenThread = new Thread(CaptureScreenThreadStart);
+            streamingProcessDict = new Dictionary<string, StreamingProcessGroup>();
+            EventDispatcher<C2S, StreamRequest>.AddListener(C2S.SetStreamingIndex, OnSetStreamIndexRequest);
         }
 
-        public void Start()
+        void OnSetStreamIndexRequest(StreamRequest request)
         {
-            int port = 8000;
-            if (Global.setting != null)
-                port = Global.setting.StreamingPort;
-            listener = new TcpListener(IPAddress.Parse(Global.ServerIP), port);
-            listener.Start();
-            running = true;
-            requestThread.Start();
-            captureScreenThread.Start();
+            int idx= BitConverter.ToInt32(request.Raw, 0);
+            Log("OnSetStreamIndexRequest "+idx);
+            request.StreamWrapper.Index = idx;
+            if (streamingProcessDict.TryGetValue(request.UUID,out var group))
+            {
+                group.TryStartSendFrameThread();
+            }
+        }
+
+        public void TryStart(string uuid)
+        {
+            if(!streamingProcessDict.ContainsKey(uuid))
+            {
+                streamingProcessDict[uuid] = new StreamingProcessGroup(uuid,Global.ServerIP, Global.setting.StreamingPort, Global.setting.MultiThreadCount);
+            }
+            if (!streamingProcessDict[uuid].IsRunning)
+            {
+                streamingProcessDict[uuid].Start();
+            }
         }
       
-        void CaptureScreenThreadStart()
-        {
-            while (running && streaming)
-            {
-                var screenStreamBytes = ScreenExt.CaptureScreenBytes();
-                SendRaw(stream, (int)S2C.Streaming, 0, screenStreamBytes);
-            }
-        }
-        /// <summary>
-        /// [4:TotalSize|4:PID|4:ClientID|4:RawFrameSize|N:RawFrameBytes]
-        /// </summary>
-        /// <param name="data"></param>
-        public void SendRaw(Stream stream, int pid, int clientId, byte[] raw)
-        {
-            if (stream != null && stream.CanWrite)
-            {
-                stream.Write(BitConverter.GetBytes(4 + 4 + 4 + raw.Length));
-                stream.Write(BitConverter.GetBytes(pid));
-                stream.Write(BitConverter.GetBytes(clientId));
-                stream.Write(BitConverter.GetBytes(raw.Length));
-                stream.Write(raw, 0, raw.Length);
-                stream.Flush();
-            }
-        }
-
-        bool accept = false;
+   
 
 
 
-        void RequestThreadStart()
-        {
-            while (running && !accept)
-            {
-                Console.WriteLine("Client waiting");
-                TcpClient tcpClient = listener.AcceptTcpClient();
-                Console.WriteLine("Client Accpet");
-                stream = tcpClient.GetStream();
-                accept = true;
+        //void RequestThreadStart()
+        //{
+        //    while (running && !accept)
+        //    {
+        //        Console.WriteLine("Client waiting");
+        //        TcpClient tcpClient = listener.AcceptTcpClient();
+        //        Console.WriteLine("Client Accpet");
+        //        stream = tcpClient.GetStream();
+        //        accept = true;
 
-                // save client to dict;
+        //        // save client to dict;
 
-                //while (true)
-                //{
-                //    var screenStreamBytes = ScreenExt.CaptureScreenBytes();
-                //    var totalBytes = screenStreamBytes;
-                //    stream.Write(BitConverter.GetBytes(totalBytes.Length));
+        //        //while (true)
+        //        //{
+        //        //    var screenStreamBytes = ScreenExt.CaptureScreenBytes();
+        //        //    var totalBytes = screenStreamBytes;
+        //        //    stream.Write(BitConverter.GetBytes(totalBytes.Length));
 
 
-                //    //int offset = 0;
-                //    //while (offset < totalBytes.Length)
-                //    //{
-                //    //    int bytesToSend = Math.Min(Const.BUFFER_SIZE, totalBytes.Length - offset);
-                //    //    stream.Write(totalBytes, offset, bytesToSend);
-                //    //    offset += bytesToSend;
-                //    //}
-                //    stream.Write(totalBytes);
-                //    stream.Flush();
-                //}
-            }
-        }
+        //        //    //int offset = 0;
+        //        //    //while (offset < totalBytes.Length)
+        //        //    //{
+        //        //    //    int bytesToSend = Math.Min(Const.BUFFER_SIZE, totalBytes.Length - offset);
+        //        //    //    stream.Write(totalBytes, offset, bytesToSend);
+        //        //    //    offset += bytesToSend;
+        //        //    //}
+        //        //    stream.Write(totalBytes);
+        //        //    stream.Flush();
+        //        //}
+        //    }
+        //}
     }
 }

@@ -7,6 +7,7 @@ using Protocol.Net;
 using System.Collections.Generic;
 using ThinkViewer.Scripts.Net.Data;
 using UnityEngine.UIElements;
+using System.Net;
 
 namespace Think.Viewer.Module
 {
@@ -16,10 +17,10 @@ namespace Think.Viewer.Module
     }
     public class MessageModule : IModule
     {
-        public List<HostNetInfo> hostNetInfos = new List<HostNetInfo>();
         public void Initialize()
         {
             EventDispatcher<S2C, PtMessagePackage>.AddListener(S2C.SearchHost, OnSearchHostResponse);
+            EventDispatcher<S2C, PtMessagePackage>.AddListener(S2C.StartStreaming, OnStartStreamingResponse);
         }
         
         void OnSearchHostResponse(PtMessagePackage message)
@@ -30,14 +31,24 @@ namespace Think.Viewer.Module
                 string ip = buffer.ReadString();
                 int hostPort = buffer.ReadInt32();
                 int streamingPort = buffer.ReadInt32();
-     
-                if(hostNetInfos.Find(item=>item.Ip == ip) == null)
+                var hostInfos = ModuleManager.GetModule<DataModule>().HostNetInfos;
+                if(hostInfos.Find(item=>item.Ip == ip) == null)
                 {
-                    hostNetInfos.Add(new HostNetInfo(hostName,ip,hostPort,streamingPort));
+                    hostInfos.Add(new HostNetInfo(hostName,ip,hostPort,streamingPort));
                     UnityLooper.Execute(()=>EventDispatcher<MessageEvent, object>.DispatchEvent(MessageEvent.HostNetInfosUpdated, null));
                 }
             }
         }
+        void OnStartStreamingResponse(PtMessagePackage message)
+        {
+            using(ByteBuffer buffer = new ByteBuffer(message.Content))
+            {
+                string settingsJson = buffer.ReadString();
+                ModuleManager.GetModule<DataModule>().HostSetting = LitJson.JsonMapper.ToObject<Setting>(settingsJson);
+                Debug.LogWarning("Setting Info " + ModuleManager.GetModule<DataModule>().HostSetting.ToString());
 
+                ModuleManager.GetModule<StreamingModule>().StartConnect((IPEndPoint)message.ExtraObj);
+            }
+        }
     }
 }

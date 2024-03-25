@@ -33,7 +33,7 @@ namespace Think.Viewer.UI
             }
             interNetworkIpBytes = interNetworkIp.GetAddressBytes();
             listRender.InitRendererList(OnSelectRender);
-            listRender.SetDataProvider(ModuleManager.GetModule<MessageModule>().hostNetInfos);
+            listRender.SetDataProvider(ModuleManager.GetModule<DataModule>().HostNetInfos);
             EventDispatcher<MessageEvent, object>.AddListener(MessageEvent.HostNetInfosUpdated, OnUpdateHostInfos);
         }
         void OnUpdateHostInfos(object value)
@@ -46,7 +46,7 @@ namespace Think.Viewer.UI
             {
                 case HostItem.Start_Streaming:
                     HostNetInfo hostNetInfo = evt.Target as HostNetInfo;
-                    GameClientNetwork.Instance.SendUnconnectedRequest(PtMessagePackage.Build((ushort)C2S.StartStreaming), hostNetInfo.EndPoint);
+                    GameClientNetwork.Instance.SendUnconnectedRequest(PtMessagePackage.BuildParams((ushort)C2S.StartStreaming,Application.UUID), hostNetInfo.EndPoint);
                     break;
                 default:
                     break;
