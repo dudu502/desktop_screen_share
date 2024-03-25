@@ -35,7 +35,17 @@ namespace Main
         }
         void SetUpConfigs()
         {
-            Global.setting = LitJson.JsonMapper.ToObject<Setting>(File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "setting.json")));
+            string settingsPath = Path.Combine(Environment.CurrentDirectory, "setting.json");
+            if (!File.Exists(settingsPath))
+            {
+                Global.setting = new Setting();
+                File.WriteAllText(settingsPath,LitJson.JsonMapper.ToJson(Global.setting));
+            }
+            else
+            {
+                Global.setting = LitJson.JsonMapper.ToObject<Setting>(File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "setting.json")));
+            }
+ 
             Logger.Log(Global.setting.ToString());
 
             var hostName = Dns.GetHostName();
