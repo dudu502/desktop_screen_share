@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using Think.Viewer.Common;
@@ -15,6 +16,8 @@ namespace Think.Viewer.Module
         public Setting HostSetting;
         public List<HostNetInfo> HostNetInfos = new List<HostNetInfo>();
         public ConcurrentQueue<byte[]> StreamingRawFrameQueue = new System.Collections.Concurrent.ConcurrentQueue<byte[]>();
+        internal IPEndPoint CurrentEndPoint;
+
         public void Initialize()
         {
             

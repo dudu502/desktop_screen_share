@@ -30,6 +30,7 @@ namespace Main.Modules.Host
         {
             EventDispatcher<C2S, UnconnectedNetMessageEvt>.AddListener(C2S.SearchHost, OnSearchHost);
             EventDispatcher<C2S, UnconnectedNetMessageEvt>.AddListener(C2S.StartStreaming, OnStartStreaming);
+            EventDispatcher<C2S, UnconnectedNetMessageEvt>.AddListener(C2S.StreamingOpLeftClick, OnStreamOpLeftClick);
         }
         
         void OnSearchHost(UnconnectedNetMessageEvt package)
@@ -56,6 +57,15 @@ namespace Main.Modules.Host
             //Start capture service
             string settingsJson = LitJson.JsonMapper.ToJson(Global.setting);
             package.Reply(GetNetManager(), PtMessagePackage.Write(PtMessagePackage.BuildParams((ushort)S2C.StartStreaming, settingsJson)));
+        }
+
+        void OnStreamOpLeftClick(UnconnectedNetMessageEvt package)
+        {
+            Log($"{nameof(OnStreamOpLeftClick)} {package.RemoteEndPoint.ToString()}");
+            PtStreamingOp op = PtStreamingOp.Read(package.Content);
+            float y = Global.setting.CaptureHeight - op.Position.Y;
+   
+            MouseSim.MouseClick((int)op.Position.X, (int)y);
         }
 
     }

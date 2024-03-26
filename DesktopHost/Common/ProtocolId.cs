@@ -13,6 +13,11 @@ namespace Think.Viewer.Common
         StartStreaming,
         SetStreamingIndex,
         StopStreaming,
+
+        StreamingOpLeftClick,
+        StreamingOpRightClick,
+        StreamingOpWheel,
+        StreamingOpDoubleClick,
     }
     public enum S2C
     {

@@ -67,7 +67,7 @@ namespace Main.Modules.Host
             tcpListenerThread = new Thread(RunAcceptThread);
             tcpListenerThread.Start();
             netStreamReceiveThread = new Thread(RunNetStreamReceiveThread);       
-            netStreamSendThread = new Thread(RunNetStreamSendThread);
+            netStreamSendThread = new Thread(RunNetStreamSendThread1);
         }
         /// <summary>
         /// Size:4|PID:2|RawLen:4|RawBytes:N
@@ -89,9 +89,9 @@ namespace Main.Modules.Host
                         int rawLength = BitConverter.ToInt32(int32SizeBytes);
 
                         int bytesRead = 0;
-                        while(bytesRead< rawLength)
+                        while(bytesRead < rawLength)
                         {
-                            int thisRead = stream.NetStream.Read(buffer, 0, Math.Min(buffer.Length, totalLength - bytesRead));
+                            int thisRead = stream.NetStream.Read(buffer, 0, Math.Min(buffer.Length, rawLength - bytesRead));
                             if (receiveRaw == null)
                                 receiveRaw = new byte[0];
                             Array.Resize(ref receiveRaw, thisRead+receiveRaw.Length);
@@ -114,6 +114,21 @@ namespace Main.Modules.Host
             if(allset)
                 netStreamSendThread.Start();
         }
+
+        void RunNetStreamSendThread1()
+        {
+            while(IsRunning)
+            {
+                byte[] screenStreamBytes = ScreenExt.CaptureScreenBytes();
+                var stream = NetStreams[0].NetStream;
+                stream.Write(BitConverter.GetBytes(screenStreamBytes.Length));
+                stream.Write(screenStreamBytes);
+                stream.Flush();
+                Thread.Sleep(10);
+
+            }
+
+        }
         /// <summary>
         /// Send Screen preview
         /// RawLen:4|RawBytes:N
@@ -131,39 +146,56 @@ namespace Main.Modules.Host
 
                     for(int i=0; i<split.Length; i++)
                     {
-                        // 
-                        var frameHash = screenStreamBytes.GetHashCode();
-                        var frameHashBytes = BitConverter.GetBytes(frameHash);
-                        
-                        var idxBytes = BitConverter.GetBytes(i); 
+                        var streamWrapper = GetNetStreamWrapper(i);
+                        if (streamWrapper != null && streamWrapper.NetStream.CanWrite)
+                        {
+                            // 
+                            var frameHash = screenStreamBytes.GetHashCode();
+                            var frameHashBytes = BitConverter.GetBytes(frameHash);
 
-                        var segBytes = split[i];
+                            var idxBytes = BitConverter.GetBytes(i);
 
-                        var idxSegLengthBytes = BitConverter.GetBytes(segBytes.Length);
-                        var idxSegBytes = new byte[4 + 4 + 4+ segBytes.Length];
-                        Buffer.BlockCopy(frameHashBytes, 0, idxSegBytes, 0, frameHashBytes.Length);
-                        Buffer.BlockCopy(idxBytes, 0, idxSegBytes, frameHashBytes.Length, idxBytes.Length);
-                        Buffer.BlockCopy(idxSegLengthBytes, 0, idxSegBytes, frameHashBytes.Length + idxBytes.Length, idxSegLengthBytes.Length);
-                        Buffer.BlockCopy(segBytes, 0, idxSegBytes, frameHashBytes.Length + idxBytes.Length + idxSegLengthBytes.Length, segBytes.Length);
-                        //
-                       
+                            var segBytes = split[i];
 
-                        
-                        byte[] segRawLengthBytes = BitConverter.GetBytes(idxSegBytes.Length);
+                            var idxSegLengthBytes = BitConverter.GetBytes(segBytes.Length);
+                            var idxSegBytes = new byte[4 + 4 + 4 + segBytes.Length];
+                            Buffer.BlockCopy(frameHashBytes, 0, idxSegBytes, 0, frameHashBytes.Length);
+                            Buffer.BlockCopy(idxBytes, 0, idxSegBytes, frameHashBytes.Length, idxBytes.Length);
+                            Buffer.BlockCopy(idxSegLengthBytes, 0, idxSegBytes, frameHashBytes.Length + idxBytes.Length, idxSegLengthBytes.Length);
+                            Buffer.BlockCopy(segBytes, 0, idxSegBytes, frameHashBytes.Length + idxBytes.Length + idxSegLengthBytes.Length, segBytes.Length);
+                            //
 
-                        byte[] segFrameRaw = new byte[4+idxSegBytes.Length];
-                        
-                        Buffer.BlockCopy(segRawLengthBytes, 0, segFrameRaw, 0 , segRawLengthBytes.Length);
-                        Buffer.BlockCopy(idxSegBytes,0,segFrameRaw,segRawLengthBytes.Length, idxSegBytes.Length);
 
-                        BaseApplication.Logger.Log($"Push Screen Seg {i} Length {segFrameRaw.Length}");
-                        NetStreams[i].NetStream.Write(segFrameRaw);
-                        NetStreams[i].NetStream.Flush();
+
+                            byte[] segRawLengthBytes = BitConverter.GetBytes(idxSegBytes.Length);
+
+                            byte[] segFrameRaw = new byte[4 + idxSegBytes.Length];
+
+                            Buffer.BlockCopy(segRawLengthBytes, 0, segFrameRaw, 0, segRawLengthBytes.Length);
+                            Buffer.BlockCopy(idxSegBytes, 0, segFrameRaw, segRawLengthBytes.Length, idxSegBytes.Length);
+
+                            //BaseApplication.Logger.Log($"Push Screen Seg {i} Length {segFrameRaw.Length}");
+
+
+
+                            streamWrapper.NetStream.Write(segFrameRaw);
+                            streamWrapper.NetStream.Flush();
+                        }
                     }
                 }
+                Thread.Sleep(10);
             }
         }
 
+        StreamWrapper GetNetStreamWrapper(int idx)
+        {
+            foreach(var item in NetStreams)
+            {
+                if(item.Index==idx)return item;
+            }
+            return null;
+        }
+             
         void RunAcceptThread()
         {
             while(IsRunning)

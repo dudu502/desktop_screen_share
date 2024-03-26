@@ -46,7 +46,7 @@ namespace Think.Viewer.Module
                 string settingsJson = buffer.ReadString();
                 ModuleManager.GetModule<DataModule>().HostSetting = LitJson.JsonMapper.ToObject<Setting>(settingsJson);
                 Debug.LogWarning("Setting Info " + ModuleManager.GetModule<DataModule>().HostSetting.ToString());
-
+                ModuleManager.GetModule<DataModule>().CurrentEndPoint = (IPEndPoint)message.ExtraObj;
                 ModuleManager.GetModule<StreamingModule>().StartConnect((IPEndPoint)message.ExtraObj);
             }
         }
