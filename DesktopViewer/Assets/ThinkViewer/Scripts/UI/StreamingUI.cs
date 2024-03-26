@@ -34,16 +34,26 @@ namespace Think.Viewer.UI
         private List<EventArgs> fsmEvents;
         public void OnPointerClick(PointerEventData eventData)
         {
-            Debug.LogWarning("Point Click"+eventData.position);
+            Debug.LogError("Point Click"+eventData.position);
             var evt = new EventArgs(POINTER_CLICK, eventData.position);
             fsmEvents.Add(evt);
-            PtStreamingOp op = new PtStreamingOp().SetOpType(Const.STREAMING_OP_TYPE_LEFT_DOWN).SetPosition(ToPtVec2(evt.ParameterAs<Vector2>()));
-            SendOp(C2S.StreamingOpLeftClick, op);
+
+            if (RectTransformUtility.ScreenPointToLocalPointInRectangle(rawImage.transform as RectTransform, eventData.position, Camera.main, out var local))
+            {
+                local.x += 1120;
+                local.y += 700;
+                PtStreamingOp op = new PtStreamingOp().SetOpType(Const.STREAMING_OP_TYPE_LEFT_DOWN).SetPosition(ToPtVec2(local));
+                SendOp(C2S.StreamingOpLeftClick, op);
+                Debug.LogError("Point Click Local " + local);
+            }
+
+
+            
         }
 
         public void OnPointerDown(PointerEventData eventData)
         {
-            Debug.LogWarning("Point down" + eventData.position);
+            Debug.LogError("Point down" + eventData.position);
             fsmEvents.Add(new EventArgs(POINTER_DOWN, eventData.position));
             //PtStreamingOp op = new PtStreamingOp().SetOpType(Const.STREAMING_OP_TYPE_LEFT_DOWN).SetPosition(ToPtVec2(evt.ParameterAs<Vector2>()));
             //SendOp(C2S.StreamingOpLeftClick, op);
@@ -52,12 +62,18 @@ namespace Think.Viewer.UI
         public void OnPointerMove(PointerEventData eventData)
         {
             fsmEvents.Add(new EventArgs(POINTER_MOVE, eventData.position));
-            //Debug.LogWarning("Point move" + eventData.position);
+            //Debug.LogError("Point move" + eventData.position);
+            if (RectTransformUtility.ScreenPointToLocalPointInRectangle(rawImage.transform as RectTransform, eventData.position, Camera.main, out var local))
+            {
+                local.x += 1120;
+                local.y += 700;
+                //Debug.LogError("Point move local " + local);
+            }
         }
 
         public void OnPointerUp(PointerEventData eventData)
         {
-            Debug.LogWarning("Point up" + eventData.position);
+            Debug.LogError("Point up" + eventData.position);
             fsmEvents.Add(new EventArgs(POINTER_UP, eventData.position));
         }
         void SendOp(C2S pid, PtStreamingOp op)
@@ -69,7 +85,7 @@ namespace Think.Viewer.UI
 
         PtVec2 ToPtVec2(Vector2 vec)
         {
-            return new PtVec2().SetX(vec.x).SetY(vec.y);
+            return new PtVec2().SetX((int)vec.x).SetY((int)vec.y);
         }
         void Start()
         {
@@ -95,7 +111,7 @@ namespace Think.Viewer.UI
         void Update()
         {
             streamingOpFSM.Update();
-            while(dataModule.StreamingRawFrameQueue.TryDequeue(out byte[] raw))
+            while(dataModule!=null&& dataModule.StreamingRawFrameQueue!=null&&dataModule.StreamingRawFrameQueue.TryDequeue(out byte[] raw))
             {
                 ((Texture2D)rawImage.texture).LoadImage(raw);
             }
