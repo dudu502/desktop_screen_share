@@ -30,7 +30,9 @@ namespace Main.Modules.Host
         {
             EventDispatcher<C2S, UnconnectedNetMessageEvt>.AddListener(C2S.SearchHost, OnSearchHost);
             EventDispatcher<C2S, UnconnectedNetMessageEvt>.AddListener(C2S.StartStreaming, OnStartStreaming);
-            EventDispatcher<C2S, UnconnectedNetMessageEvt>.AddListener(C2S.StreamingOpLeftClick, OnStreamOpLeftClick);
+            EventDispatcher<C2S, UnconnectedNetMessageEvt>.AddListener(C2S.StreamingOpLeftMouse, OnStreamOpLeftMouse);
+            EventDispatcher<C2S, UnconnectedNetMessageEvt>.AddListener(C2S.StreamingOpRightMouse, OnStreamOpRightMouse);
+            //EventDispatcher<C2S, UnconnectedNetMessageEvt>.AddListener(C2S.StreamingOpDoubleClick, OnStreamOpDoubleClick);
         }
         
         void OnSearchHost(UnconnectedNetMessageEvt package)
@@ -59,14 +61,50 @@ namespace Main.Modules.Host
             package.Reply(GetNetManager(), PtMessagePackage.Write(PtMessagePackage.BuildParams((ushort)S2C.StartStreaming, settingsJson)));
         }
 
-        void OnStreamOpLeftClick(UnconnectedNetMessageEvt package)
+        void OnStreamOpLeftMouse(UnconnectedNetMessageEvt package)
         {
-            Log($"{nameof(OnStreamOpLeftClick)} {package.RemoteEndPoint.ToString()}");
             PtStreamingOp op = PtStreamingOp.Read(package.Content);
+     
+           
             float y = Global.setting.CaptureHeight - op.Position.Y;
-   
-            MouseSim.MouseClick((int)op.Position.X, (int)y);
+            if (op.OpType == Const.STREAMING_OP_TYPE_LEFT_CLICK)
+            {
+                Log($"{nameof(OnStreamOpLeftMouse)} {package.RemoteEndPoint.ToString()} STREAMING_OP_TYPE_LEFT_CLICK");
+                MouseSim.MouseLeftClick((int)op.Position.X, (int)y);
+            }
+            else if (op.OpType == Const.STREAMING_OP_TYPE_LEFT_DOWN)
+            {
+                Log($"{nameof(OnStreamOpLeftMouse)} {package.RemoteEndPoint.ToString()} STREAMING_OP_TYPE_LEFT_DOWN");
+                MouseSim.MouseLeftDown((int)op.Position.X, (int)y);
+            }
+            else if (op.OpType == Const.STREAMING_OP_TYPE_LEFT_UP)
+            {
+                Log($"{nameof(OnStreamOpLeftMouse)} {package.RemoteEndPoint.ToString()} STREAMING_OP_TYPE_LEFT_UP");
+                MouseSim.MouseLeftUp((int)op.Position.X, (int)y);
+            }
+
+            else if (op.OpType == Const.STREAMING_OP_TYPE_DOUBLE_CLICK)
+            {
+                Log($"{nameof(OnStreamOpLeftMouse)} {package.RemoteEndPoint.ToString()} STREAMING_OP_TYPE_DOUBLE_CLICK");
+                MouseSim.MouseLeftDoubleClick((int)op.Position.X, (int)y);
+            }
+            else if (op.OpType == Const.STREAMING_OP_TYPE_MOVE)
+                MouseSim.SetCursorPos((int)op.Position.X, (int)y);
+            //new MouseSimulator()
+
         }
+
+        void OnStreamOpRightMouse(UnconnectedNetMessageEvt package)
+        {
+            PtStreamingOp op = PtStreamingOp.Read(package.Content);
+            Log($"{nameof(OnStreamOpRightMouse)} {package.RemoteEndPoint.ToString()} {op.OpType}");
+            
+            float y = Global.setting.CaptureHeight - op.Position.Y;
+            if(op.OpType == Const.STREAMING_OP_TYPE_RIGHT_CLICK)
+                MouseSim.MouseRightClick((int)op.Position.X, (int)y);
+        }
+
+      
 
     }
 }

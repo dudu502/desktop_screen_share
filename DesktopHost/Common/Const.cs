@@ -14,9 +14,11 @@ namespace Think.Viewer.Common
         public const byte STREAMING_OP_TYPE_RIGHT_CLICK = 2;
         public const byte STREAMING_OP_TYPE_LEFT_DOWN = 3;
         public const byte STREAMING_OP_TYPE_RIGHT_DOWN = 4;
-        public const byte STREAMING_OP_TYPE_WHEEL = 5;
-        public const byte STREAMING_OP_TYPE_MOVE = 6;
-        public const byte STREAMING_OP_TYPE_DOUBLE_CLICK = 7;
+        public const byte STREAMING_OP_TYPE_LEFT_UP = 5;
+        public const byte STREAMING_OP_TYPE_RIGHT_UP = 6;
+        public const byte STREAMING_OP_TYPE_WHEEL = 7;
+        public const byte STREAMING_OP_TYPE_MOVE = 8;
+        public const byte STREAMING_OP_TYPE_DOUBLE_CLICK = 9;
 
     }
 }

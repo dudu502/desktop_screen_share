@@ -4,5 +4,13 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
-  m_configObjects: {}
+  m_Scenes:
+  - enabled: 0
+    path: Assets/ThinkViewer/Scenes/Demo2d.unity
+    guid: e6b2664358ff49847b370c4ef72859be
+  - enabled: 1
+    path: Assets/ThinkViewer/Scenes/DemoVr.unity
+    guid: b7366d600dda9cf48ae46b5ef9180e65
+  m_configObjects:
+    com.unity.xr.management.loader_settings: {fileID: 11400000, guid: da3554819eea86f41b8dca099d790ac7, type: 2}
+    com.unity.xr.openxr.settings4: {fileID: 11400000, guid: fa0a25df52c2f584182297d90c9470fe, type: 2}

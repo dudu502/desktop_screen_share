@@ -71,7 +71,7 @@ namespace Main
             byte[] bytes = new byte[reader.AvailableBytes];
             reader.GetBytes(bytes, reader.AvailableBytes);
             PtMessagePackage package = PtMessagePackage.Read(bytes);
-            Logger.Log($"Receive event from {remoteEndPoint} ProtocolId:C2S.{(C2S)package.MessageId}");
+            //Logger.Log($"Receive event from {remoteEndPoint} ProtocolId:C2S.{(C2S)package.MessageId}");
             EventDispatcher<C2S, UnconnectedNetMessageEvt>.DispatchEvent((C2S)package.MessageId, new UnconnectedNetMessageEvt(remoteEndPoint, package.Content));
             reader.Recycle();
         }

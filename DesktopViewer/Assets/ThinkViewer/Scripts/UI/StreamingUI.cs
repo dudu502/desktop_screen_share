@@ -9,6 +9,7 @@ using Think.Viewer.Module;
 using Think.Viewer.Net;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 namespace Think.Viewer.UI
@@ -30,51 +31,37 @@ namespace Think.Viewer.UI
         }
         public RawImage rawImage;
         private DataModule dataModule;
-        private StateMachine<StreamingUI> streamingOpFSM;
-        private List<EventArgs> fsmEvents;
+        private PointerEventData pointerEventData;
+        public InputActionReference shiftButtonAction, selectButtonAction,triggerButtonAction;
         public void OnPointerClick(PointerEventData eventData)
         {
             Debug.LogError("Point Click"+eventData.position);
-            var evt = new EventArgs(POINTER_CLICK, eventData.position);
-            fsmEvents.Add(evt);
-
-            if (RectTransformUtility.ScreenPointToLocalPointInRectangle(rawImage.transform as RectTransform, eventData.position, Camera.main, out var local))
-            {
-                local.x += 1120;
-                local.y += 700;
-                PtStreamingOp op = new PtStreamingOp().SetOpType(Const.STREAMING_OP_TYPE_LEFT_DOWN).SetPosition(ToPtVec2(local));
-                SendOp(C2S.StreamingOpLeftClick, op);
-                Debug.LogError("Point Click Local " + local);
-            }
-
-
-            
+            pointerEventData = eventData;
+         
         }
 
         public void OnPointerDown(PointerEventData eventData)
         {
             Debug.LogError("Point down" + eventData.position);
-            fsmEvents.Add(new EventArgs(POINTER_DOWN, eventData.position));
-            //PtStreamingOp op = new PtStreamingOp().SetOpType(Const.STREAMING_OP_TYPE_LEFT_DOWN).SetPosition(ToPtVec2(evt.ParameterAs<Vector2>()));
-            //SendOp(C2S.StreamingOpLeftClick, op);
+            pointerEventData = eventData;
+
         }
 
         public void OnPointerMove(PointerEventData eventData)
         {
-            fsmEvents.Add(new EventArgs(POINTER_MOVE, eventData.position));
-            //Debug.LogError("Point move" + eventData.position);
-            if (RectTransformUtility.ScreenPointToLocalPointInRectangle(rawImage.transform as RectTransform, eventData.position, Camera.main, out var local))
+            pointerEventData = eventData;
+            Debug.LogError("Point move" + eventData.position);
+            if (RectTransformUtility.ScreenPointToLocalPointInRectangle(rawImage.transform as RectTransform, pointerEventData.position, Camera.main, out var local))
             {
-                local.x += 1120;
-                local.y += 700;
-                //Debug.LogError("Point move local " + local);
+                PtStreamingOp op = new PtStreamingOp().SetOpType(Const.STREAMING_OP_TYPE_MOVE).SetPosition(ToPtVec2(local));
+                SendOp(C2S.StreamingOpLeftMouse, op);
             }
         }
 
         public void OnPointerUp(PointerEventData eventData)
         {
             Debug.LogError("Point up" + eventData.position);
-            fsmEvents.Add(new EventArgs(POINTER_UP, eventData.position));
+            pointerEventData = eventData;
         }
         void SendOp(C2S pid, PtStreamingOp op)
         {
@@ -85,32 +72,88 @@ namespace Think.Viewer.UI
 
         PtVec2 ToPtVec2(Vector2 vec)
         {
+            vec.x += dataModule.HostSetting.CaptureWidth / 2;
+            vec.y += dataModule.HostSetting.CaptureHeight / 2;
             return new PtVec2().SetX((int)vec.x).SetY((int)vec.y);
         }
+   
         void Start()
         {
             dataModule = ModuleManager.GetModule<DataModule>();
             rawImage.texture = new Texture2D(2,2, TextureFormat.ARGB32, false);
-            streamingOpFSM = new StateMachine<StreamingUI>(this)
-                .State(OpState.Idle)
-                .End()
-                .State(OpState.Click)
-                .End()
-                .State(OpState.Down)
-                .End()
-                .State(OpState.Up)
-                .End()
-                .State(OpState.DoubleClick)
-                .End()
-                .State(OpState.Move)
-                .End().SetDefault(OpState.Idle).Build();
-            fsmEvents = streamingOpFSM.GetEventArgs();
+
+            shiftButtonAction.action.performed += OnShiftButtonPerformed;
+            selectButtonAction.action.performed += OnSelectButtonPerformed;
+            //triggerButtonAction.action.performed += OnTriggerButtonPerformed;
+            triggerButtonAction.action.started += OnTriggerButtonStarted;
+            triggerButtonAction.action.canceled += OnTriggerButtonCanceled;
+
         }
 
+        void OnShiftButtonPerformed(InputAction.CallbackContext context)
+        {
+            Debug.LogWarning("OnShiftButtonPerformed " + context.ToString());
+            if (RectTransformUtility.ScreenPointToLocalPointInRectangle(rawImage.transform as RectTransform, pointerEventData.position, Camera.main, out var local))
+            {
+                PtStreamingOp op = new PtStreamingOp().SetOpType(Const.STREAMING_OP_TYPE_RIGHT_CLICK).SetPosition(ToPtVec2(local));
+                SendOp(C2S.StreamingOpRightMouse, op);
+           
+            }
+        }
+        void OnSelectButtonPerformed(InputAction.CallbackContext context)
+        {
+            Debug.LogWarning("OnSelectButtonPerformed " + context.ToString());
+
+            if (RectTransformUtility.ScreenPointToLocalPointInRectangle(rawImage.transform as RectTransform, pointerEventData.position, Camera.main, out var local))
+            {
+                PtStreamingOp op = new PtStreamingOp().SetOpType(Const.STREAMING_OP_TYPE_DOUBLE_CLICK).SetPosition(ToPtVec2(local));
+                SendOp(C2S.StreamingOpLeftMouse, op);
+              
+            }
+        }
+        void OnTriggerButtonStarted(InputAction.CallbackContext context)
+        {
+            Debug.LogWarning("OnTriggerButtonStarted " + context.ToString());
+            //left click
+            if (RectTransformUtility.ScreenPointToLocalPointInRectangle(rawImage.transform as RectTransform, pointerEventData.position, Camera.main, out var local))
+            {
+                PtStreamingOp op = new PtStreamingOp().SetOpType(Const.STREAMING_OP_TYPE_LEFT_DOWN).SetPosition(ToPtVec2(local));
+                SendOp(C2S.StreamingOpLeftMouse, op);
+            }
+        }
+        void OnTriggerButtonCanceled(InputAction.CallbackContext context)
+        {
+            Debug.LogWarning("OnTriggerButtonCanceled " + context.ToString());
+            //left click
+            Vector2 local;
+            if (RectTransformUtility.ScreenPointToLocalPointInRectangle(rawImage.transform as RectTransform, pointerEventData.position, Camera.main, out local))
+            {
+                PtStreamingOp op = new PtStreamingOp().SetOpType(Const.STREAMING_OP_TYPE_LEFT_UP).SetPosition(ToPtVec2(local));
+                SendOp(C2S.StreamingOpLeftMouse, op);
+                
+            }
+
+            if (RectTransformUtility.ScreenPointToLocalPointInRectangle(rawImage.transform as RectTransform, pointerEventData.position, Camera.main, out local))
+            {
+                PtStreamingOp op = new PtStreamingOp().SetOpType(Const.STREAMING_OP_TYPE_LEFT_CLICK).SetPosition(ToPtVec2(local));
+                SendOp(C2S.StreamingOpLeftMouse, op);
+              
+            }
+        }
+        void OnTriggerButtonPerformed(InputAction.CallbackContext context)
+        {
+            Debug.LogWarning("OnTriggerButtonPerformed " + context.ToString());
+            //left click
+            if (RectTransformUtility.ScreenPointToLocalPointInRectangle(rawImage.transform as RectTransform, pointerEventData.position, Camera.main, out var local))
+            {
+                PtStreamingOp op = new PtStreamingOp().SetOpType(Const.STREAMING_OP_TYPE_LEFT_CLICK).SetPosition(ToPtVec2(local));
+                SendOp(C2S.StreamingOpLeftMouse, op);
+                
+            }
+        }
         // Update is called once per frame
         void Update()
         {
-            streamingOpFSM.Update();
             while(dataModule!=null&& dataModule.StreamingRawFrameQueue!=null&&dataModule.StreamingRawFrameQueue.TryDequeue(out byte[] raw))
             {
                 ((Texture2D)rawImage.texture).LoadImage(raw);

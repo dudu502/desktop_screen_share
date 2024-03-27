@@ -92,6 +92,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   CurrentLayer: 0
   rawImage: {fileID: 7051554156799388206}
+  shiftButtonAction: {fileID: 992064858455174076, guid: c348712bda248c246b8c49b3db54643f, type: 3}
+  selectButtonAction: {fileID: 187161793506945269, guid: c348712bda248c246b8c49b3db54643f, type: 3}
+  triggerButtonAction: {fileID: 83097790271614945, guid: c348712bda248c246b8c49b3db54643f, type: 3}
 --- !u!1 &6750595659281557840
 GameObject:
   m_ObjectHideFlags: 0
