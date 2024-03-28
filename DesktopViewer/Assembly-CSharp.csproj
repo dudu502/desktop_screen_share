@@ -82,6 +82,7 @@
     <Compile Include="Assets\RecyclingList\Scripts\Samples\MyFlexibleItem.cs" />
     <Compile Include="Assets\ThinkViewer\Scripts\UI\Item\HostItem.cs" />
     <Compile Include="Assets\ThinkViewer\Module\DataModule.cs" />
+    <Compile Include="Assets\Test\LocalImageLoader.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\TextMesh Pro\Shaders\TMPro.cginc" />

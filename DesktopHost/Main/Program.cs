@@ -23,6 +23,16 @@ namespace Main
             MainServerApp app = new MainServerApp(key);
             app.StartServer(Global.setting.HostPort);
             Console.ReadKey();
+
+
+            // Test();
+            // Console.ReadKey();
+        }
+
+        async static void Test()
+        {
+            ScreenExt.Init(new System.Drawing.Rectangle(0, 0, 2240, 1400),50L);
+            File.WriteAllBytes(Path.Combine(Environment.CurrentDirectory, "1.bytes"), await SevenZip.Helper.CompressBytesAsync(ScreenExt.BitBltCaptureScreenBytes()));
         }
     }
 }

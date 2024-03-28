@@ -65,6 +65,7 @@ namespace Think.Viewer.Module
                     Debug.LogWarning("Frame Start Read seg ] " + bytesRead);
                 }
                 ModuleManager.GetModule<DataModule>().StreamingRawFrameQueue.Enqueue(frameRaw);
+                //ModuleManager.GetModule<DataModule>().StreamingRawFrameQueue.Enqueue(SevenZip.Helper.DecompressBytes(frameRaw));
             }
         }
         public void Receive()

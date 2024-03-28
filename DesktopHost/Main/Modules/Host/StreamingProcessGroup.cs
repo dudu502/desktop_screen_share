@@ -124,7 +124,7 @@ namespace Main.Modules.Host
             {
                 while (captureLooper.TryDequeue(out var action))
                     action?.Invoke();
-                byte[] screenStreamBytes = ScreenExt.BitBltCaptureScreenBytes();
+                byte[] screenStreamBytes =  ScreenExt.BitBltCaptureScreenBytes();
                 var stream = NetStreams[0].NetStream;
                 stream.Write(BitConverter.GetBytes(screenStreamBytes.Length));
                 stream.Write(screenStreamBytes);

@@ -137,6 +137,24 @@ namespace SevenZip
             return bytes;
         }
 
+        public static byte[] CompressBytes(byte[] rawSource)
+        {
+            using (Stream input = new MemoryStream(rawSource))
+            using (Stream output = new MemoryStream())
+            {
+                Compress(input, output);
+                return StreamToByteArray(output);
+            }
+        }
+        public static byte[] DecompressBytes(byte[] compressedSource)
+        {
+            using (Stream input = new MemoryStream(compressedSource))
+            using (Stream output = new MemoryStream())
+            {
+                Decompress(input, output);
+                return StreamToByteArray(output);
+            }
+        }
         public static Task<byte[]> CompressBytesAsync(byte[] rawSource)
         {
             return Task.Run(()=> {
