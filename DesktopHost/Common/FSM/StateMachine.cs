@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using UnityEngine;
 
-namespace Think.Viewer.FSM
+namespace Switch.Structure.FSM
 {
     public class EventArgs
     {
@@ -64,7 +63,7 @@ namespace Think.Viewer.FSM
         private Func<TObject, bool> m_Validate;
         private Action<TObject> m_Transfer;
 
-        public TransitionBase(int id, int toId, Func<TObject, bool> valid, Action<TObject> transfer, StateBase<TObject> stateBase)
+        public TransitionBase(int id, int toId, Func<TObject, bool> valid, Action<TObject> transfer,StateBase<TObject> stateBase)
         {
             m_ParentState = stateBase;
             Id = id;
@@ -75,7 +74,7 @@ namespace Think.Viewer.FSM
 
         public TransitionBase<TObject> Clone(StateBase<TObject> stateBase)
         {
-            TransitionBase<TObject> clone = new TransitionBase<TObject>(Id, ToId, m_Validate, m_Transfer, stateBase);
+            TransitionBase<TObject> clone = new TransitionBase<TObject>(Id,ToId,m_Validate,m_Transfer,stateBase);
             return clone;
         }
 
@@ -216,12 +215,12 @@ namespace Think.Viewer.FSM
                     StateMachineDebug.Log($"<color=green>StateId:{Id} {nameof(OnInitialize)} Parameters:{param}</color>");
             }
         }
-        public StateBase(int id, StateMachine<TObject> stateMachine)
+        public StateBase(int id,StateMachine<TObject> stateMachine)
         {
             Id = id;
             m_Parent = stateMachine;
         }
-        public virtual StateBase<TObject> Clone(TObject param, int id, StateMachine<TObject> stateMachine)
+        public virtual StateBase<TObject> Clone(TObject param,int id, StateMachine<TObject> stateMachine)
         {
             StateBase<TObject> clone = new StateBase<TObject>(id, stateMachine);
             clone.EarlyUpdate(m_OnEarlyUpdate);
@@ -233,7 +232,7 @@ namespace Think.Viewer.FSM
         }
         public TransitionBase<TObject> Transition(Func<TObject, bool> valid)
         {
-            TransitionBase<TObject> transition = new TransitionBase<TObject>(Id, 0, valid, null, this);
+            TransitionBase<TObject> transition = new TransitionBase<TObject>(Id, 0, valid, null,this);
             m_Parent.AddTransition(transition);
             return transition;
         }
@@ -242,7 +241,7 @@ namespace Think.Viewer.FSM
             return m_Parent;
         }
     }
-
+    
     internal class StateMachineConst
     {
         public const int ENTRY = int.MaxValue - 1;
@@ -255,25 +254,25 @@ namespace Think.Viewer.FSM
         StateBase<TObject> m_Current;
         TObject m_Parameter;
         List<EventArgs> m_EventArgs;
-
-        public StateMachine(TObject param, int id, StateMachine<TObject> parent) : base(id, parent)
+        
+        public StateMachine(TObject param, int id, StateMachine<TObject> parent) : base(id,parent)
         {
             _Initialize(param);
         }
 
-        public StateMachine(TObject param) : base(int.MinValue, null)
+        public StateMachine(TObject param) : base(int.MinValue,null)
         {
             _Initialize(param);
         }
 
         public static StateMachine<TObject> Clone(TObject param, StateMachine<TObject> stateMachine)
         {
-            return (StateMachine<TObject>)stateMachine.Clone(param, int.MinValue, null);
+            return (StateMachine<TObject>)stateMachine.Clone(param,int.MinValue,null);
         }
 
         public override StateBase<TObject> Clone(TObject param, int id, StateMachine<TObject> stateMachine)
         {
-            StateMachine<TObject> clone = new StateMachine<TObject>(param, id, stateMachine);
+            StateMachine<TObject> clone = new StateMachine<TObject>(param,id, stateMachine);
             clone.EarlyUpdate(m_OnEarlyUpdate);
             clone.Initialize(m_OnInitialize);
             clone.Enter(m_OnEnter);
@@ -281,7 +280,7 @@ namespace Think.Viewer.FSM
             clone.Update(m_OnUpdate);
             foreach (int stateId in m_States.Keys)
             {
-                clone.m_States[stateId] = m_States[stateId].Clone(param, stateId, clone);
+                clone.m_States[stateId] = m_States[stateId].Clone(param, stateId,clone);
             }
             foreach (int transitionId in m_Transitions.Keys)
             {
@@ -329,21 +328,21 @@ namespace Think.Viewer.FSM
             m_EventArgs = new List<EventArgs>();
             m_Transitions = new Dictionary<int, List<TransitionBase<TObject>>>();
             m_States = new Dictionary<int, StateBase<TObject>>();
-            m_States[StateMachineConst.ENTRY] = new StateBase<TObject>(StateMachineConst.ENTRY, this);
-            m_States[StateMachineConst.END] = new StateBase<TObject>(StateMachineConst.END, this);
+            m_States[StateMachineConst.ENTRY] = new StateBase<TObject>(StateMachineConst.ENTRY,this);
+            m_States[StateMachineConst.END] = new StateBase<TObject>(StateMachineConst.END,this);
             Reset();
         }
 
         public StateBase<TObject> State<TState>(TState id) where TState : Enum
         {
-            StateBase<TObject> state = new StateBase<TObject>(Convert.ToInt32(id), this);
+            StateBase<TObject> state = new StateBase<TObject>(Convert.ToInt32(id),this);
             m_States[state.Id] = state;
             return state;
         }
 
         public StateMachine<TObject> Machine<TState>(TState id) where TState : Enum
         {
-            StateMachine<TObject> machine = new StateMachine<TObject>(m_Parameter, Convert.ToInt32(id), this);
+            StateMachine<TObject> machine = new StateMachine<TObject>(m_Parameter, Convert.ToInt32(id),this);
             m_States[machine.Id] = machine;
             return machine;
         }
@@ -364,8 +363,8 @@ namespace Think.Viewer.FSM
         {
             int fromStateId = Convert.ToInt32(id);
             int toStateId = Convert.ToInt32(toId);
-            foreach (int stateId in m_States.Keys)
-                if (stateId == (fromStateId & stateId))
+            foreach(int stateId in m_States.Keys)
+                if(stateId == (fromStateId & stateId))
                     AddTransition(new TransitionBase<TObject>(stateId, toStateId, valid, transfer, m_States[stateId]));
             return this;
         }
@@ -374,7 +373,7 @@ namespace Think.Viewer.FSM
             int toStateId = Convert.ToInt32(toId);
             foreach (int stateId in m_States.Keys)
                 if (stateId != toStateId)
-                    AddTransition(new TransitionBase<TObject>(stateId, toStateId, valid, transfer, m_States[stateId]));
+                    AddTransition(new TransitionBase<TObject>(stateId,toStateId,valid,transfer, m_States[stateId]));
             return this;
         }
         internal override void OnExit(TObject param)

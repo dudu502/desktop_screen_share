@@ -119,7 +119,7 @@ namespace Main.Modules.Host
         {
             while(IsRunning)
             {
-                byte[] screenStreamBytes = ScreenExt.CaptureScreenBytes();
+                byte[] screenStreamBytes = ScreenExt.BitBltCaptureScreenBytes();
                 var stream = NetStreams[0].NetStream;
                 stream.Write(BitConverter.GetBytes(screenStreamBytes.Length));
                 stream.Write(screenStreamBytes);
@@ -204,7 +204,7 @@ namespace Main.Modules.Host
                 BaseApplication.Logger.Log("Accept "+client.ToString());
                 var netStream = client.GetStream();
                 NetStreams.Add(new StreamWrapper(netStream));
-                if(NetStreams.Count == MultiThreadCount)
+                if (NetStreams.Count == MultiThreadCount)
                 {
                     netStreamReceiveThread.Start();
                 }

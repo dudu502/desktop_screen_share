@@ -5,11 +5,14 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace Think.Viewer.FSM
+namespace Think.Viewer.Common
 {
+    /// <summary>
+    /// Unit:s
+    /// </summary>
     public class Timer
     {
-        public float startTime;
+        private float startTime;
         public float Elapsed => Time.time - startTime;
 
         public Timer()

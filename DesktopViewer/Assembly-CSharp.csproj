@@ -58,30 +58,29 @@
     <Analyzer Include="C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\Extensions\Microsoft\Visual Studio Tools for Unity\Analyzers\Microsoft.Unity.Analyzers.dll" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\ThinkViewer\Scripts\Timer.cs" />
     <Compile Include="Assets\ThinkViewer\Scripts\Net\Data\HostNetInfo.cs" />
-    <Compile Include="Assets\ThinkViewer\Scripts\FSM\StateMachine.cs" />
-    <Compile Include="Assets\ThinkViewer\UnityLooper.cs" />
     <Compile Include="Assets\ThinkViewer\Scripts\ImageLoader.cs" />
     <Compile Include="Assets\RecyclingList\Scripts\RecyclingListRenderer.cs" />
-    <Compile Include="Assets\ThinkViewer\Module\UIView.cs" />
     <Compile Include="Assets\ThinkViewer\Module\MessageModule.cs" />
+    <Compile Include="Assets\ThinkViewer\Scripts\UI\UITypes.cs" />
+    <Compile Include="Assets\RecyclingList\Scripts\FlexibleSingleColumnItem.cs" />
+    <Compile Include="Assets\RecyclingList\Scripts\Samples\MyRecyItem.cs" />
+    <Compile Include="Assets\RecyclingList\Scripts\Samples\ListPanelForTest.cs" />
+    <Compile Include="Assets\ThinkViewer\Module\UIModule.cs" />
+    <Compile Include="Assets\ThinkViewer\Scripts\UI\StreamingUI.cs" />
+    <Compile Include="Assets\ThinkViewer\Scripts\Net\NetworkController.cs" />
+    <Compile Include="Assets\ThinkViewer\UnityLooper.cs" />
+    <Compile Include="Assets\ThinkViewer\Module\UIView.cs" />
     <Compile Include="Assets\ThinkViewer\Scripts\Net\GameClientNetwork.cs" />
     <Compile Include="Assets\ThinkViewer\Module\StreamingModule.cs" />
     <Compile Include="Assets\ThinkViewer\Scripts\UI\WelcomeUI.cs" />
-    <Compile Include="Assets\ThinkViewer\Scripts\UI\UITypes.cs" />
-    <Compile Include="Assets\RecyclingList\Scripts\FlexibleSingleColumnItem.cs" />
     <Compile Include="Assets\RecyclingList\Scripts\RecyclingItem.cs" />
     <Compile Include="Assets\RecyclingList\Scripts\FlexibleSingleColumnListRenderer.cs" />
     <Compile Include="Assets\ThinkViewer\Scripts\Application.cs" />
-    <Compile Include="Assets\RecyclingList\Scripts\Samples\MyRecyItem.cs" />
-    <Compile Include="Assets\RecyclingList\Scripts\Samples\ListPanelForTest.cs" />
-    <Compile Include="Assets\ThinkViewer\Scripts\FSM\Timer.cs" />
-    <Compile Include="Assets\ThinkViewer\Module\UIModule.cs" />
     <Compile Include="Assets\ThinkViewer\Scripts\ModuleManager.cs" />
     <Compile Include="Assets\RecyclingList\Scripts\Samples\MyFlexibleItem.cs" />
-    <Compile Include="Assets\ThinkViewer\Scripts\UI\StreamingUI.cs" />
     <Compile Include="Assets\ThinkViewer\Scripts\UI\Item\HostItem.cs" />
-    <Compile Include="Assets\ThinkViewer\Scripts\Net\NetworkController.cs" />
     <Compile Include="Assets\ThinkViewer\Module\DataModule.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -944,6 +943,10 @@
       <HintPath>Library\ScriptAssemblies\Unity.VSCode.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Unity.RenderPipelines.Universal.Shaders">
+      <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.Universal.Shaders.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Unity.TextMeshPro.Editor">
       <HintPath>Library\ScriptAssemblies\Unity.TextMeshPro.Editor.dll</HintPath>
       <Private>False</Private>
@@ -962,6 +965,10 @@
     </Reference>
     <Reference Include="Unity.VisualScripting.State.Editor">
       <HintPath>Library\ScriptAssemblies\Unity.VisualScripting.State.Editor.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Searcher.Editor">
+      <HintPath>Library\ScriptAssemblies\Unity.Searcher.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.VisualScripting.SettingsProvider.Editor">
@@ -984,6 +991,10 @@
       <HintPath>Library\ScriptAssemblies\Unity.Rider.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Unity.RenderPipelines.Core.ShaderLibrary">
+      <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.Core.ShaderLibrary.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="UnityEngine.UI">
       <HintPath>Library\ScriptAssemblies\UnityEngine.UI.dll</HintPath>
       <Private>False</Private>
@@ -1002,6 +1013,14 @@
     </Reference>
     <Reference Include="Unity.XR.CoreUtils.Editor">
       <HintPath>Library\ScriptAssemblies\Unity.XR.CoreUtils.Editor.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.ShaderGraph.Editor">
+      <HintPath>Library\ScriptAssemblies\Unity.ShaderGraph.Editor.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.RenderPipeline.Universal.ShaderLibrary">
+      <HintPath>Library\ScriptAssemblies\Unity.RenderPipeline.Universal.ShaderLibrary.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.XR.ARSubsystems.Editor">
@@ -1036,6 +1055,14 @@
       <HintPath>Library\ScriptAssemblies\Unity.VisualScripting.Flow.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Unity.RenderPipelines.Universal.Runtime">
+      <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.Universal.Runtime.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="PPv2URPConverters">
+      <HintPath>Library\ScriptAssemblies\PPv2URPConverters.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Unity.VisualStudio.Editor">
       <HintPath>Library\ScriptAssemblies\Unity.VisualStudio.Editor.dll</HintPath>
       <Private>False</Private>
@@ -1060,8 +1087,16 @@
       <HintPath>Library\ScriptAssemblies\Unity.TextMeshPro.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Unity.Burst.Editor">
+      <HintPath>Library\ScriptAssemblies\Unity.Burst.Editor.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Unity.XR.Interaction.Toolkit">
       <HintPath>Library\ScriptAssemblies\Unity.XR.Interaction.Toolkit.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.RenderPipelines.Core.Runtime">
+      <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.Core.Runtime.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.Subsystem.Registration">
@@ -1088,6 +1123,14 @@
       <HintPath>Library\ScriptAssemblies\Unity.Mathematics.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Unity.Burst">
+      <HintPath>Library\ScriptAssemblies\Unity.Burst.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.RenderPipelines.Universal.Editor">
+      <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.Universal.Editor.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="UnityEngine.XR.LegacyInputHelpers">
       <HintPath>Library\ScriptAssemblies\UnityEngine.XR.LegacyInputHelpers.dll</HintPath>
       <Private>False</Private>
@@ -1112,6 +1155,10 @@
       <HintPath>Library\ScriptAssemblies\Unity.XR.CoreUtils.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Unity.RenderPipelines.ShaderGraph.ShaderGraphLibrary">
+      <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.ShaderGraph.ShaderGraphLibrary.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="UnityEditor.XR.LegacyInputHelpers">
       <HintPath>Library\ScriptAssemblies\UnityEditor.XR.LegacyInputHelpers.dll</HintPath>
       <Private>False</Private>
@@ -1134,6 +1181,10 @@
     </Reference>
     <Reference Include="Unity.XR.OpenXR.Features.ConformanceAutomation">
       <HintPath>Library\ScriptAssemblies\Unity.XR.OpenXR.Features.ConformanceAutomation.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.RenderPipelines.Core.Editor">
+      <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.Core.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.XR.OpenXR.Features.RuntimeDebugger.Editor">

@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Boxophobic.Utils.Scripts", "Boxophobic.Utils.Scripts.csproj", "{AAC02FAD-5851-8D00-6E9D-146E355B7851}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Assembly-CSharp", "Assembly-CSharp.csproj", "{477C699B-E76A-9C21-CF0E-2CC578F57090}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Boxophobic.Utils.Scripts", "Boxophobic.Utils.Scripts.csproj", "{AAC02FAD-5851-8D00-6E9D-146E355B7851}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.XR.Interaction.Toolkit.Samples.StarterAssets", "Unity.XR.Interaction.Toolkit.Samples.StarterAssets.csproj", "{842DCD1B-BA14-5795-F964-E0D59E0FF069}"
 EndProject
@@ -19,14 +19,14 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{AAC02FAD-5851-8D00-6E9D-146E355B7851}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AAC02FAD-5851-8D00-6E9D-146E355B7851}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AAC02FAD-5851-8D00-6E9D-146E355B7851}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AAC02FAD-5851-8D00-6E9D-146E355B7851}.Release|Any CPU.Build.0 = Release|Any CPU
 		{477C699B-E76A-9C21-CF0E-2CC578F57090}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{477C699B-E76A-9C21-CF0E-2CC578F57090}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{477C699B-E76A-9C21-CF0E-2CC578F57090}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{477C699B-E76A-9C21-CF0E-2CC578F57090}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AAC02FAD-5851-8D00-6E9D-146E355B7851}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AAC02FAD-5851-8D00-6E9D-146E355B7851}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AAC02FAD-5851-8D00-6E9D-146E355B7851}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AAC02FAD-5851-8D00-6E9D-146E355B7851}.Release|Any CPU.Build.0 = Release|Any CPU
 		{842DCD1B-BA14-5795-F964-E0D59E0FF069}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{842DCD1B-BA14-5795-F964-E0D59E0FF069}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{842DCD1B-BA14-5795-F964-E0D59E0FF069}.Release|Any CPU.ActiveCfg = Release|Any CPU

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -48,5 +49,36 @@ namespace Main.Ext
             }
             return null;
         }
+
+        [DllImport("gdi32.dll")]
+        static extern bool BitBlt(IntPtr hdcDest, int nXDest, int nYDest, int nWidth, int nHeight, IntPtr hdcSrc, int nXSrc, int nYSrc, int dwRop);
+        [DllImport("user32.dll")]
+        static extern IntPtr GetDesktopWindow();
+        [DllImport("user32.dll")]
+        static extern IntPtr GetWindowDC(IntPtr hWnd);
+
+        public static byte[] BitBltCaptureScreenBytes()
+        {
+            IntPtr desktopHandle = GetDesktopWindow();
+            IntPtr desktopDC = GetWindowDC(desktopHandle);
+            Size screenSize = new Size(screenBounds.Width, screenBounds.Height);
+            Bitmap screenImage = new Bitmap(screenSize.Width, screenSize.Height);
+            Graphics g = Graphics.FromImage(screenImage);
+
+            IntPtr gHdc = g.GetHdc();
+            BitBlt(gHdc, screenBounds.X, screenBounds.Y, screenSize.Width, screenSize.Height, desktopDC, 0, 0, 0x00CC0020); // SRCCOPY
+            g.ReleaseHdc(gHdc);
+
+            using (var ms = new MemoryStream())
+            {
+                screenImage.Save(ms, jpegEncoder, encoderParameters);
+                var raw = new byte[ms.Length];
+                ms.Seek(0, SeekOrigin.Begin);
+                ms.Read(raw, 0, raw.Length);
+                return raw;
+            }
+
+        }
+
     }
 }

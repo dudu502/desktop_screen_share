@@ -3,7 +3,6 @@ using Net;
 using System.Collections;
 using System.Collections.Generic;
 using Think.Viewer.Common;
-using Think.Viewer.FSM;
 using Think.Viewer.Manager;
 using Think.Viewer.Module;
 using Think.Viewer.Net;
