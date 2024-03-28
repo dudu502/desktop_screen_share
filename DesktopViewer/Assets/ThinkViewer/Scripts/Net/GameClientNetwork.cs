@@ -7,6 +7,8 @@ using System.Threading;
 using System;
 using Think.Viewer.Common;
 using Think.Viewer.Event;
+using Think.Viewer.Manager;
+using Think.Viewer.Module;
 
 namespace Think.Viewer.Net
 {
@@ -188,6 +190,18 @@ namespace Think.Viewer.Net
         {
             if (m_ClientMgr != null)
                 m_ClientMgr.SendUnconnectedMessage(PtMessagePackage.Write(package), remotePoint);
+        }
+        public void SendUnconnectedRequest(C2S pid, byte[] raw)
+        {
+            var currentRemoteEndPoint = ModuleManager.GetModule<DataModule>().CurrentEndPoint;
+            if (currentRemoteEndPoint != null)
+                SendUnconnectedRequest(PtMessagePackage.Build((ushort)pid, raw), currentRemoteEndPoint);
+        }
+        public void SendUnconnectedRequest(C2S pid, params object[] p)
+        {
+            var currentRemoteEndPoint = ModuleManager.GetModule<DataModule>().CurrentEndPoint;
+            if (currentRemoteEndPoint != null)
+                SendUnconnectedRequest(PtMessagePackage.BuildParams((ushort)pid, p), currentRemoteEndPoint);
         }
         public void TickDispatchMessages()
         {

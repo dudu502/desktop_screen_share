@@ -20,6 +20,3 @@ D:\dudu502\desktop_screen_share\DesktopHost\Main\obj\Debug\net6.0\Main.csproj.Co
 D:\dudu502\desktop_screen_share\DesktopHost\Main\bin\Debug\net6.0\LitJson.dll
 D:\dudu502\desktop_screen_share\DesktopHost\Main\bin\Debug\net6.0\Common.dll
 D:\dudu502\desktop_screen_share\DesktopHost\Main\bin\Debug\net6.0\Common.pdb
-D:\dudu502\desktop_screen_share\DesktopHost\Main\bin\Debug\net6.0\SharpDX.dll
-D:\dudu502\desktop_screen_share\DesktopHost\Main\bin\Debug\net6.0\SharpDX.Direct3D11.dll
-D:\dudu502\desktop_screen_share\DesktopHost\Main\bin\Debug\net6.0\SharpDX.DXGI.dll

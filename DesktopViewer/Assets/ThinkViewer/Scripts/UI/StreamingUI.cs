@@ -1,5 +1,6 @@
 using Development.Net.Pt;
 using Net;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Think.Viewer.Common;
@@ -29,14 +30,15 @@ namespace Think.Viewer.UI
             Move,
         }
         public RawImage rawImage;
+        public Slider qualitySlider;
         private DataModule dataModule;
         private PointerEventData pointerEventData;
         public InputActionReference shiftButtonAction, selectButtonAction,triggerButtonAction;
+        private Rect screenRect;
         public void OnPointerClick(PointerEventData eventData)
         {
             Debug.LogError("Point Click"+eventData.position);
             pointerEventData = eventData;
-         
         }
 
         public void OnPointerDown(PointerEventData eventData)
@@ -49,11 +51,15 @@ namespace Think.Viewer.UI
         public void OnPointerMove(PointerEventData eventData)
         {
             pointerEventData = eventData;
-            Debug.LogError("Point move" + eventData.position);
+     
             if (RectTransformUtility.ScreenPointToLocalPointInRectangle(rawImage.transform as RectTransform, pointerEventData.position, Camera.main, out var local))
             {
-                PtStreamingOp op = new PtStreamingOp().SetOpType(Const.STREAMING_OP_TYPE_MOVE).SetPosition(ToPtVec2(local));
-                SendOp(C2S.StreamingOpLeftMouse, op);
+                var movePos = ToPtVec2(local);
+                if (movePos.X < screenRect.x || movePos.X >= (screenRect.x + screenRect.width)) return;
+                if (movePos.Y < screenRect.y || movePos.Y >= (screenRect.y + screenRect.height)) return;
+                Debug.LogError("Point Move" + movePos.X+" "+ movePos.Y);
+                PtStreamingOp op = new PtStreamingOp().SetOpType(Const.STREAMING_OP_DOWN).SetPosition(movePos);
+                GameClientNetwork.Instance.SendUnconnectedRequest(C2S.StreamingOpLeftMouse, PtStreamingOp.Write(op));
             }
         }
 
@@ -62,12 +68,7 @@ namespace Think.Viewer.UI
             Debug.LogError("Point up" + eventData.position);
             pointerEventData = eventData;
         }
-        void SendOp(C2S pid, PtStreamingOp op)
-        {
-            var currentRemoteEndPoint = ModuleManager.GetModule<DataModule>().CurrentEndPoint;
-            if (currentRemoteEndPoint != null)
-                GameClientNetwork.Instance.SendUnconnectedRequest(PtMessagePackage.Build((ushort)pid,PtStreamingOp.Write(op)), currentRemoteEndPoint);
-        }
+        
 
         PtVec2 ToPtVec2(Vector2 vec)
         {
@@ -79,75 +80,94 @@ namespace Think.Viewer.UI
         void Start()
         {
             dataModule = ModuleManager.GetModule<DataModule>();
+            screenRect = new Rect(dataModule.HostSetting.CaptureX, dataModule.HostSetting.CaptureY, dataModule.HostSetting.CaptureWidth, dataModule.HostSetting.CaptureHeight);
             rawImage.texture = new Texture2D(2,2, TextureFormat.ARGB32, false);
 
             shiftButtonAction.action.performed += OnShiftButtonPerformed;
             selectButtonAction.action.performed += OnSelectButtonPerformed;
-            //triggerButtonAction.action.performed += OnTriggerButtonPerformed;
+            triggerButtonAction.action.performed += OnTriggerButtonPerformed;
             triggerButtonAction.action.started += OnTriggerButtonStarted;
             triggerButtonAction.action.canceled += OnTriggerButtonCanceled;
 
+            qualitySlider.value = Convert.ToInt32(dataModule.HostSetting.StreamingQuality);
+            qualitySlider.onValueChanged.AddListener(OnQualitySliderChanged);
         }
-
+        void OnQualitySliderChanged(float value)
+        {
+            //qualitySlider.value = value;
+            Debug.LogWarning("OnQualitySliderChanged" + value);
+            GameClientNetwork.Instance.SendUnconnectedRequest(C2S.ChangeQuality, Application.UUID, (int)value);
+        }
+        /// <summary>
+        /// Shift Click(Right Click)
+        /// </summary>
+        /// <param name="context"></param>
         void OnShiftButtonPerformed(InputAction.CallbackContext context)
         {
-            Debug.LogWarning("OnShiftButtonPerformed " + context.ToString());
+            Debug.LogWarning("StreamingUI OnShiftButtonPerformed Shift Click(Right Click) " + context.ToString());
             if (RectTransformUtility.ScreenPointToLocalPointInRectangle(rawImage.transform as RectTransform, pointerEventData.position, Camera.main, out var local))
             {
-                PtStreamingOp op = new PtStreamingOp().SetOpType(Const.STREAMING_OP_TYPE_RIGHT_CLICK).SetPosition(ToPtVec2(local));
-                SendOp(C2S.StreamingOpRightMouse, op);
-           
+                PtStreamingOp op = new PtStreamingOp().SetOpType(Const.STREAMING_OP_CLICK).SetPosition(ToPtVec2(local));
+                GameClientNetwork.Instance.SendUnconnectedRequest(C2S.StreamingOpRightMouse, PtStreamingOp.Write(op));
             }
         }
+        /// <summary>
+        /// Double Click
+        /// </summary>
+        /// <param name="context"></param>
         void OnSelectButtonPerformed(InputAction.CallbackContext context)
         {
-            Debug.LogWarning("OnSelectButtonPerformed " + context.ToString());
+            Debug.LogWarning("StreamingUI OnSelectButtonPerformed Double Click " + context.ToString());
 
             if (RectTransformUtility.ScreenPointToLocalPointInRectangle(rawImage.transform as RectTransform, pointerEventData.position, Camera.main, out var local))
             {
-                PtStreamingOp op = new PtStreamingOp().SetOpType(Const.STREAMING_OP_TYPE_DOUBLE_CLICK).SetPosition(ToPtVec2(local));
-                SendOp(C2S.StreamingOpLeftMouse, op);
-              
+                PtStreamingOp op = new PtStreamingOp().SetOpType(Const.STREAMING_OP_DOUBLE_CLICK).SetPosition(ToPtVec2(local));
+                GameClientNetwork.Instance.SendUnconnectedRequest(C2S.StreamingOpLeftMouse, PtStreamingOp.Write(op));
             }
         }
+
+        /// <summary>
+        /// Down
+        /// </summary>
+        /// <param name="context"></param>
         void OnTriggerButtonStarted(InputAction.CallbackContext context)
         {
-            Debug.LogWarning("OnTriggerButtonStarted " + context.ToString());
+            Debug.LogWarning("StreamingUI OnTriggerButtonStarted Down " + context.ToString());
             //left click
             if (RectTransformUtility.ScreenPointToLocalPointInRectangle(rawImage.transform as RectTransform, pointerEventData.position, Camera.main, out var local))
             {
-                PtStreamingOp op = new PtStreamingOp().SetOpType(Const.STREAMING_OP_TYPE_LEFT_DOWN).SetPosition(ToPtVec2(local));
-                SendOp(C2S.StreamingOpLeftMouse, op);
+                PtStreamingOp op = new PtStreamingOp().SetOpType(Const.STREAMING_OP_DOWN).SetPosition(ToPtVec2(local));
+                GameClientNetwork.Instance.SendUnconnectedRequest(C2S.StreamingOpLeftMouse, PtStreamingOp.Write(op));
             }
         }
+
+        /// <summary>
+        /// Up
+        /// </summary>
+        /// <param name="context"></param>
         void OnTriggerButtonCanceled(InputAction.CallbackContext context)
         {
-            Debug.LogWarning("OnTriggerButtonCanceled " + context.ToString());
+            Debug.LogWarning("StreamingUI OnTriggerButtonCanceled Up " + context.ToString());
             //left click
             Vector2 local;
             if (RectTransformUtility.ScreenPointToLocalPointInRectangle(rawImage.transform as RectTransform, pointerEventData.position, Camera.main, out local))
             {
-                PtStreamingOp op = new PtStreamingOp().SetOpType(Const.STREAMING_OP_TYPE_LEFT_UP).SetPosition(ToPtVec2(local));
-                SendOp(C2S.StreamingOpLeftMouse, op);
-                
-            }
-
-            if (RectTransformUtility.ScreenPointToLocalPointInRectangle(rawImage.transform as RectTransform, pointerEventData.position, Camera.main, out local))
-            {
-                PtStreamingOp op = new PtStreamingOp().SetOpType(Const.STREAMING_OP_TYPE_LEFT_CLICK).SetPosition(ToPtVec2(local));
-                SendOp(C2S.StreamingOpLeftMouse, op);
-              
+                PtStreamingOp op = new PtStreamingOp().SetOpType(Const.STREAMING_OP_UP).SetPosition(ToPtVec2(local));
+                GameClientNetwork.Instance.SendUnconnectedRequest(C2S.StreamingOpLeftMouse, PtStreamingOp.Write(op));
             }
         }
+        /// <summary>
+        /// Click
+        /// </summary>
+        /// <param name="context"></param>
         void OnTriggerButtonPerformed(InputAction.CallbackContext context)
         {
-            Debug.LogWarning("OnTriggerButtonPerformed " + context.ToString());
+            Debug.LogWarning("StreamingUI OnTriggerButtonPerformed Click " + context.ToString());
             //left click
             if (RectTransformUtility.ScreenPointToLocalPointInRectangle(rawImage.transform as RectTransform, pointerEventData.position, Camera.main, out var local))
             {
-                PtStreamingOp op = new PtStreamingOp().SetOpType(Const.STREAMING_OP_TYPE_LEFT_CLICK).SetPosition(ToPtVec2(local));
-                SendOp(C2S.StreamingOpLeftMouse, op);
-                
+                PtStreamingOp op = new PtStreamingOp().SetOpType(Const.STREAMING_OP_CLICK).SetPosition(ToPtVec2(local));
+                GameClientNetwork.Instance.SendUnconnectedRequest(C2S.StreamingOpLeftMouse, PtStreamingOp.Write(op));
             }
         }
         // Update is called once per frame

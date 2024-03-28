@@ -17,6 +17,12 @@ namespace Main.Ext
         static ImageCodecInfo jpegEncoder;
         static EncoderParameters encoderParameters = new EncoderParameters(1);
         static EncoderParameter encoderParameter;
+
+        public static void ChangeQuality(int quality)
+        {
+            encoderParameter = new EncoderParameter(System.Drawing.Imaging.Encoder.Quality, (long)quality);
+            encoderParameters.Param[0] = encoderParameter;
+        }
         public static void Init(Rectangle screenRect,long quality = 20L)
         {
             screenBounds = screenRect;

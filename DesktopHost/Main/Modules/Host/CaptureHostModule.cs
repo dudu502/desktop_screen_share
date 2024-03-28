@@ -1,5 +1,7 @@
 ﻿using Main.Ext;
+using Net;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -17,12 +19,20 @@ namespace Main.Modules.Host
     {
         public bool IsRunning = false;
         private Dictionary<string, StreamingProcessGroup> streamingProcessDict;
+ 
         public CaptureHostModule(BaseApplication app) : base(app)
         {
             streamingProcessDict = new Dictionary<string, StreamingProcessGroup>();
             EventDispatcher<C2S, StreamRequest>.AddListener(C2S.SetStreamingIndex, OnSetStreamIndexRequest);
         }
-
+        public StreamingProcessGroup GetStreamingProcessGroup(string uuid)
+        {
+            if(streamingProcessDict.ContainsKey(uuid))
+            {
+                return streamingProcessDict[uuid];
+            }
+            return null;
+        }
         void OnSetStreamIndexRequest(StreamRequest request)
         {
             int idx= BitConverter.ToInt32(request.Raw, 0);

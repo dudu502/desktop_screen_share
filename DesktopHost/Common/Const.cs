@@ -10,15 +10,11 @@ namespace Think.Viewer.Common
     {
         public const int BUFFER_SIZE = 1024 * 4;
 
-        public const byte STREAMING_OP_TYPE_LEFT_CLICK = 1;
-        public const byte STREAMING_OP_TYPE_RIGHT_CLICK = 2;
-        public const byte STREAMING_OP_TYPE_LEFT_DOWN = 3;
-        public const byte STREAMING_OP_TYPE_RIGHT_DOWN = 4;
-        public const byte STREAMING_OP_TYPE_LEFT_UP = 5;
-        public const byte STREAMING_OP_TYPE_RIGHT_UP = 6;
-        public const byte STREAMING_OP_TYPE_WHEEL = 7;
-        public const byte STREAMING_OP_TYPE_MOVE = 8;
-        public const byte STREAMING_OP_TYPE_DOUBLE_CLICK = 9;
+        public const byte STREAMING_OP_DOWN = 1;
+        public const byte STREAMING_OP_UP = 2;
+        public const byte STREAMING_OP_CLICK = 3;
+        public const byte STREAMING_OP_DOUBLE_CLICK = 4;
+        public const byte STREAMING_OP_MOVE = 5;
 
     }
 }

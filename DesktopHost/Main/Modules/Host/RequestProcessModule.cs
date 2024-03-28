@@ -1,4 +1,5 @@
 ﻿using Development.Net.Pt;
+using Main.Ext;
 using Net;
 using Protocol.Net;
 using System;
@@ -32,9 +33,25 @@ namespace Main.Modules.Host
             EventDispatcher<C2S, UnconnectedNetMessageEvt>.AddListener(C2S.StartStreaming, OnStartStreaming);
             EventDispatcher<C2S, UnconnectedNetMessageEvt>.AddListener(C2S.StreamingOpLeftMouse, OnStreamOpLeftMouse);
             EventDispatcher<C2S, UnconnectedNetMessageEvt>.AddListener(C2S.StreamingOpRightMouse, OnStreamOpRightMouse);
-            //EventDispatcher<C2S, UnconnectedNetMessageEvt>.AddListener(C2S.StreamingOpDoubleClick, OnStreamOpDoubleClick);
+            EventDispatcher<C2S, UnconnectedNetMessageEvt>.AddListener(C2S.ChangeQuality, OnChangeQuality);
         }
         
+        void OnChangeQuality(UnconnectedNetMessageEvt package)
+        {
+            using (ByteBuffer buffer = new ByteBuffer(package.Content))
+            {
+                string uuid = buffer.ReadString();
+                int quality = buffer.ReadInt32();
+                var group = GetModule<CaptureHostModule>().GetStreamingProcessGroup(uuid);
+                if(group != null )
+                {
+                    group.captureLooper.Enqueue(() =>
+                    {
+                        ScreenExt.ChangeQuality(quality);
+                    });
+                }
+            }
+        }
         void OnSearchHost(UnconnectedNetMessageEvt package)
         {
             Log($"{nameof(OnSearchHost)} {package.RemoteEndPoint.ToString()}");
@@ -64,47 +81,48 @@ namespace Main.Modules.Host
         void OnStreamOpLeftMouse(UnconnectedNetMessageEvt package)
         {
             PtStreamingOp op = PtStreamingOp.Read(package.Content);
-     
-           
-            float y = Global.setting.CaptureHeight - op.Position.Y;
-            if (op.OpType == Const.STREAMING_OP_TYPE_LEFT_CLICK)
-            {
-                Log($"{nameof(OnStreamOpLeftMouse)} {package.RemoteEndPoint.ToString()} STREAMING_OP_TYPE_LEFT_CLICK");
-                MouseSim.MouseLeftClick((int)op.Position.X, (int)y);
-            }
-            else if (op.OpType == Const.STREAMING_OP_TYPE_LEFT_DOWN)
-            {
-                Log($"{nameof(OnStreamOpLeftMouse)} {package.RemoteEndPoint.ToString()} STREAMING_OP_TYPE_LEFT_DOWN");
-                MouseSim.MouseLeftDown((int)op.Position.X, (int)y);
-            }
-            else if (op.OpType == Const.STREAMING_OP_TYPE_LEFT_UP)
-            {
-                Log($"{nameof(OnStreamOpLeftMouse)} {package.RemoteEndPoint.ToString()} STREAMING_OP_TYPE_LEFT_UP");
-                MouseSim.MouseLeftUp((int)op.Position.X, (int)y);
-            }
 
-            else if (op.OpType == Const.STREAMING_OP_TYPE_DOUBLE_CLICK)
-            {
-                Log($"{nameof(OnStreamOpLeftMouse)} {package.RemoteEndPoint.ToString()} STREAMING_OP_TYPE_DOUBLE_CLICK");
-                MouseSim.MouseLeftDoubleClick((int)op.Position.X, (int)y);
-            }
-            else if (op.OpType == Const.STREAMING_OP_TYPE_MOVE)
-                MouseSim.SetCursorPos((int)op.Position.X, (int)y);
-            //new MouseSimulator()
+            int x = (int)op.Position.X;
+            int y = (int)(Global.setting.CaptureHeight - op.Position.Y);
 
+            switch (op.OpType)
+            {
+                case Const.STREAMING_OP_CLICK:
+                    MouseSim.MouseLeftClick(x, y);
+                    break;
+                case Const.STREAMING_OP_DOWN:
+                    MouseSim.MouseLeftDown(x, y);
+                    break;
+                case Const.STREAMING_OP_UP:
+                    MouseSim.MouseLeftUp(x, y);
+                    break;
+                case Const.STREAMING_OP_DOUBLE_CLICK:
+                    MouseSim.MouseLeftDoubleClick(x, y);
+                    break;
+                case Const.STREAMING_OP_MOVE:
+                    MouseSim.SetCursorPos(x, y);
+                    break;
+                default:
+                    break;
+            }
         }
 
         void OnStreamOpRightMouse(UnconnectedNetMessageEvt package)
         {
             PtStreamingOp op = PtStreamingOp.Read(package.Content);
             Log($"{nameof(OnStreamOpRightMouse)} {package.RemoteEndPoint.ToString()} {op.OpType}");
-            
-            float y = Global.setting.CaptureHeight - op.Position.Y;
-            if(op.OpType == Const.STREAMING_OP_TYPE_RIGHT_CLICK)
-                MouseSim.MouseRightClick((int)op.Position.X, (int)y);
+
+            int x = (int)op.Position.X;
+            int y = (int)(Global.setting.CaptureHeight - op.Position.Y);
+            switch (op.OpType)
+            {
+                case Const.STREAMING_OP_CLICK:
+                    MouseSim.MouseRightClick((int)op.Position.X, (int)y);
+                    break;
+                default:
+                    break;
+            }
+              
         }
-
-      
-
     }
 }

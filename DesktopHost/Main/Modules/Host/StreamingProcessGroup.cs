@@ -1,6 +1,7 @@
 ﻿using Common;
 using Main.Ext;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -18,6 +19,7 @@ namespace Main.Modules.Host
         public StreamWrapper StreamWrapper;
         public byte[] Raw;
         public string UUID;
+
         public StreamRequest(string uuid,StreamWrapper streamWrapper, byte[] raw)
         {
             UUID = uuid;
@@ -50,7 +52,8 @@ namespace Main.Modules.Host
         private readonly byte[] int32SizeBytes = new byte[4];
         private readonly byte[] int16SizeBytes = new byte[2];
         private readonly byte[] buffer = new byte[Const.BUFFER_SIZE];
-        
+
+        public ConcurrentQueue<Action> captureLooper = new ConcurrentQueue<Action>();
         public StreamingProcessGroup(string uuid,string ip,int streamingPort,int multi_thread) 
         {
             UUID = uuid;
@@ -119,13 +122,14 @@ namespace Main.Modules.Host
         {
             while(IsRunning)
             {
+                while (captureLooper.TryDequeue(out var action))
+                    action?.Invoke();
                 byte[] screenStreamBytes = ScreenExt.BitBltCaptureScreenBytes();
                 var stream = NetStreams[0].NetStream;
                 stream.Write(BitConverter.GetBytes(screenStreamBytes.Length));
                 stream.Write(screenStreamBytes);
                 stream.Flush();
                 Thread.Sleep(10);
-
             }
 
         }

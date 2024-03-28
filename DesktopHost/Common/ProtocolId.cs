@@ -13,7 +13,7 @@ namespace Think.Viewer.Common
         StartStreaming,
         SetStreamingIndex,
         StopStreaming,
-
+        ChangeQuality,
         StreamingOpLeftMouse,
         StreamingOpRightMouse,
         StreamingOpWheel,

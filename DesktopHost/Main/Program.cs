@@ -19,11 +19,11 @@ namespace Main
         static string key = "Host";
         static void Main(string[] args)
         {
-            //MainServerApp.Logger = new ConsoleLogger(key, string.Empty);
-            //MainServerApp app = new MainServerApp(key);
-            //app.StartServer(Global.setting.HostPort);
-            //Console.ReadKey();
-            ScreenCapture.SHARYDX();
+            MainServerApp.Logger = new ConsoleLogger(key, string.Empty);
+            MainServerApp app = new MainServerApp(key);
+            app.StartServer(Global.setting.HostPort);
+            Console.ReadKey();
+            //ScreenCapture.SHARYDX();
         }
     }
 }
