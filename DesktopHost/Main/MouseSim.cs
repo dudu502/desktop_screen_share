@@ -47,14 +47,13 @@ namespace Main
             mouse_event(MOUSEEVENTF_RIGHTDOWN | MOUSEEVENTF_RIGHTUP, (uint)x, (uint)y, 0, 0);
         }
 
-        public async static void MouseLeftDoubleClick(int x,int y)
+        public static void MouseLeftDoubleClick(int x,int y)
         {
             Console.WriteLine($"MouseDoubleLeftClick {x} {y}");
             SetCursorPos(x, y);
             for(int i=0;i<2;i++)
             {
                 mouse_event(MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_LEFTUP, (uint)x, (uint)y, 0, 0);
-                await Task.Delay(100);
             }
         }
     }

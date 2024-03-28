@@ -54,6 +54,7 @@ namespace Think.Viewer.UI
         }
         public void OnClickSearch()
         {
+            Debug.LogWarning("OnClickSearch");
             for(int i = 1; i < 256; ++i)
             {
                 IPAddress ip = IPAddress.Parse($"{interNetworkIpBytes[0]}.{interNetworkIpBytes[1]}.{interNetworkIpBytes[2]}.{i}");

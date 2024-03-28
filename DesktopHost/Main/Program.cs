@@ -23,7 +23,6 @@ namespace Main
             MainServerApp app = new MainServerApp(key);
             app.StartServer(Global.setting.HostPort);
             Console.ReadKey();
-            //ScreenCapture.SHARYDX();
         }
     }
 }
