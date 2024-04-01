@@ -1,8 +1,10 @@
 ﻿using Common;
 using Main.Ext;
+using Protocol.Net;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -45,6 +47,7 @@ namespace Main.Modules.Host
 
         public List<StreamWrapper> NetStreams;
         public bool IsRunning;
+        public bool WaitingAccept = true;
         private TcpListener listener;
         private Thread tcpListenerThread;
         private Thread netStreamReceiveThread;
@@ -129,9 +132,8 @@ namespace Main.Modules.Host
                 stream.Write(BitConverter.GetBytes(screenStreamBytes.Length));
                 stream.Write(screenStreamBytes);
                 stream.Flush();
-                Thread.Sleep(10);
+             //   Thread.Sleep(10);
             }
-
         }
         /// <summary>
         /// Send Screen preview
@@ -141,52 +143,43 @@ namespace Main.Modules.Host
         {
             while (IsRunning)
             {
-                byte[] screenStreamBytes = ScreenExt.CaptureScreenBytes();
-                if (screenStreamBytes != null)
+                while (captureLooper.TryDequeue(out var action))
+                    action?.Invoke();
+                // capture screen raw bytes;
+                byte[] screenStreamBytes = ScreenExt.BitBltCaptureScreenBytes();
+
+                byte[][] split = Utils.SplitByteArray(screenStreamBytes, MultiThreadCount);
+
+                for (int i = 0; i < split.Length; i++)
                 {
-                    int screenRawLength = screenStreamBytes.Length;
-
-                    byte[][] split = Utils.SplitByteArray(screenStreamBytes, MultiThreadCount);
-
-                    for(int i=0; i<split.Length; i++)
+                    var streamWrapper = GetNetStreamWrapper(i);
+                    if (streamWrapper != null && streamWrapper.NetStream.CanWrite)
                     {
-                        var streamWrapper = GetNetStreamWrapper(i);
-                        if (streamWrapper != null && streamWrapper.NetStream.CanWrite)
-                        {
-                            // 
-                            var frameHash = screenStreamBytes.GetHashCode();
-                            var frameHashBytes = BitConverter.GetBytes(frameHash);
-
-                            var idxBytes = BitConverter.GetBytes(i);
-
-                            var segBytes = split[i];
-
-                            var idxSegLengthBytes = BitConverter.GetBytes(segBytes.Length);
-                            var idxSegBytes = new byte[4 + 4 + 4 + segBytes.Length];
-                            Buffer.BlockCopy(frameHashBytes, 0, idxSegBytes, 0, frameHashBytes.Length);
-                            Buffer.BlockCopy(idxBytes, 0, idxSegBytes, frameHashBytes.Length, idxBytes.Length);
-                            Buffer.BlockCopy(idxSegLengthBytes, 0, idxSegBytes, frameHashBytes.Length + idxBytes.Length, idxSegLengthBytes.Length);
-                            Buffer.BlockCopy(segBytes, 0, idxSegBytes, frameHashBytes.Length + idxBytes.Length + idxSegLengthBytes.Length, segBytes.Length);
-                            //
+                        // Write total Size bytes(i32)
+                        byte[] totalSizeBytes = BitConverter.GetBytes(4 + 4 + 4 + split[i].Length);
+                        // the Hashcode bytes of screen picture.(i32)
+                        byte[] frameHashBytes = BitConverter.GetBytes(screenStreamBytes.GetHashCode());
+                        // the Index bytes(i32)
+                        byte[] idxBytes = BitConverter.GetBytes(i);
+                        // one seg size bytes (i32)
+                        byte[] segSizeByts = BitConverter.GetBytes(split[i].Length);
+                        // one seg bytes;
+                        byte[] segBytes = split[i];
 
 
+                        byte[] frameBytes = new byte[4+BitConverter.ToInt32(totalSizeBytes)];
+                        Buffer.BlockCopy(totalSizeBytes, 0, frameBytes, 0, totalSizeBytes.Length);
+                        Buffer.BlockCopy(frameHashBytes,0,frameBytes,totalSizeBytes.Length, frameHashBytes.Length);
+                        Buffer.BlockCopy(idxBytes, 0, frameBytes, totalSizeBytes.Length + frameHashBytes.Length, idxBytes.Length);
+                        Buffer.BlockCopy(segSizeByts,0,frameBytes,totalSizeBytes.Length+frameHashBytes.Length+idxBytes.Length,segSizeByts.Length);
+                        Buffer.BlockCopy(segBytes,0,frameBytes,totalSizeBytes.Length+frameHashBytes.Length+idxBytes.Length+segSizeByts.Length,segBytes.Length);
 
-                            byte[] segRawLengthBytes = BitConverter.GetBytes(idxSegBytes.Length);
-
-                            byte[] segFrameRaw = new byte[4 + idxSegBytes.Length];
-
-                            Buffer.BlockCopy(segRawLengthBytes, 0, segFrameRaw, 0, segRawLengthBytes.Length);
-                            Buffer.BlockCopy(idxSegBytes, 0, segFrameRaw, segRawLengthBytes.Length, idxSegBytes.Length);
-
-                            //BaseApplication.Logger.Log($"Push Screen Seg {i} Length {segFrameRaw.Length}");
-
-
-
-                            streamWrapper.NetStream.Write(segFrameRaw);
-                            streamWrapper.NetStream.Flush();
-                        }
+                        BaseApplication.Logger.Log($"Write Seg {i} Count {frameBytes.Length}");
+                        streamWrapper.NetStream.WriteAsync(frameBytes);
+                        streamWrapper.NetStream.FlushAsync();
                     }
                 }
+
                 Thread.Sleep(10);
             }
         }
@@ -202,7 +195,7 @@ namespace Main.Modules.Host
              
         void RunAcceptThread()
         {
-            while(IsRunning)
+            while(IsRunning && WaitingAccept)
             {
                 TcpClient client = listener.AcceptTcpClient();
                 BaseApplication.Logger.Log("Accept "+client.ToString());
@@ -211,6 +204,7 @@ namespace Main.Modules.Host
                 if (NetStreams.Count == MultiThreadCount)
                 {
                     netStreamReceiveThread.Start();
+                    WaitingAccept = false;
                 }
             }
         }

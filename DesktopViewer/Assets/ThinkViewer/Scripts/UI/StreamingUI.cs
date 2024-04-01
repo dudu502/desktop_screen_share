@@ -181,7 +181,7 @@ namespace Think.Viewer.UI
         void Update()
         {
             inputFsm.Update();
-            while (dataModule!=null&& dataModule.StreamingRawFrameQueue!=null&&dataModule.StreamingRawFrameQueue.TryDequeue(out byte[] raw))
+            while (dataModule != null && dataModule.StreamingRawFrameQueue != null && dataModule.StreamingRawFrameQueue.TryDequeue(out byte[] raw))
             {
                 ((Texture2D)rawImage.texture).LoadImage(raw);
             }

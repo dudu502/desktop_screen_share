@@ -1,13 +1,4 @@
-﻿using Main.Ext;
-using Net;
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.Sockets;
-using System.Text;
-using System.Threading.Tasks;
+﻿
 using Think.Viewer.Common;
 using Think.Viewer.Core;
 using Think.Viewer.Event;
@@ -18,42 +9,34 @@ namespace Main.Modules.Host
     public class CaptureHostModule : BaseModule
     {
         public bool IsRunning = false;
-        private Dictionary<string, StreamingProcessGroup> streamingProcessDict;
- 
+        private StreamingProcessGroup streamingProcessGroup;
+
         public CaptureHostModule(BaseApplication app) : base(app)
         {
-            streamingProcessDict = new Dictionary<string, StreamingProcessGroup>();
             EventDispatcher<C2S, StreamRequest>.AddListener(C2S.SetStreamingIndex, OnSetStreamIndexRequest);
         }
         public StreamingProcessGroup GetStreamingProcessGroup(string uuid)
         {
-            if(streamingProcessDict.ContainsKey(uuid))
-            {
-                return streamingProcessDict[uuid];
-            }
+            if(streamingProcessGroup != null && streamingProcessGroup.UUID == uuid) 
+                return streamingProcessGroup;
             return null;
         }
         void OnSetStreamIndexRequest(StreamRequest request)
         {
             int idx= BitConverter.ToInt32(request.Raw, 0);
-            Log("OnSetStreamIndexRequest "+idx);
             request.StreamWrapper.Index = idx;
-            if (streamingProcessDict.TryGetValue(request.UUID,out var group))
+            if (streamingProcessGroup != null && streamingProcessGroup.UUID == request.UUID)
             {
-                group.TryStartSendFrameThread();
+                streamingProcessGroup.TryStartSendFrameThread();
             }
         }
 
         public void TryStart(string uuid)
         {
-            if(!streamingProcessDict.ContainsKey(uuid))
-            {
-                streamingProcessDict[uuid] = new StreamingProcessGroup(uuid,Global.ServerIP, Global.setting.StreamingPort, Global.setting.MultiThreadCount);
-            }
-            if (!streamingProcessDict[uuid].IsRunning)
-            {
-                streamingProcessDict[uuid].Start();
-            }
+            if (streamingProcessGroup == null)
+                streamingProcessGroup = new StreamingProcessGroup(uuid, Global.ServerIP, Global.setting.StreamingPort, Global.setting.MultiThreadCount);
+            if (!streamingProcessGroup.IsRunning)
+                streamingProcessGroup.Start();
         }
       
    

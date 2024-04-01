@@ -38,6 +38,7 @@ namespace Think.Viewer.Module
             while (true)
             {
                 Receive1();
+                //Thread.Sleep(10);
             }
         }
 
@@ -50,22 +51,21 @@ namespace Think.Viewer.Module
                 stream.Read(Int32Bytes, 0, 4);
                 int totalLen = BitConverter.ToInt32(Int32Bytes);
                 int bytesRead = 0;
-                while(bytesRead < totalLen)
+                while (bytesRead < totalLen)
                 {
-                    Debug.LogWarning("Frame Start Read seg [ " + bytesRead);
+                    //Debug.LogWarning("Frame Start Read seg [ " + bytesRead);
                     int thisread = stream.Read(buffer, 0, Math.Min(buffer.Length, totalLen - bytesRead));
                     if (frameRaw == null)
                         frameRaw = new byte[0];
-                    Debug.LogWarning("Frame Start Read seg [[ Resize to " + (frameRaw.Length + thisread));
+                    //Debug.LogWarning("Frame Start Read seg [[ Resize to " + (frameRaw.Length + thisread));
                     Array.Resize(ref frameRaw, frameRaw.Length + thisread);
-                    Debug.LogWarning("Frame Start Read seg [[ Resized to " + (frameRaw.Length) + $" CopyOp bufferSize:{buffer.Length} frameRawSize:{frameRaw.Length} dstOffset:{0 + bytesRead} count:{thisread}");
+                    //Debug.LogWarning("Frame Start Read seg [[ Resized to " + (frameRaw.Length) + $" CopyOp bufferSize:{buffer.Length} frameRawSize:{frameRaw.Length} dstOffset:{0 + bytesRead} count:{thisread}");
                     Buffer.BlockCopy(buffer, 0, frameRaw, 0 + bytesRead, thisread);
-                    Debug.LogWarning("Frame Start Read seg [[ BlockCopy " + frameRaw.Length);
+                    //Debug.LogWarning("Frame Start Read seg [[ BlockCopy " + frameRaw.Length);
                     bytesRead += thisread;
-                    Debug.LogWarning("Frame Start Read seg ] " + bytesRead);
+                    //Debug.LogWarning("Frame Start Read seg ] " + bytesRead);
                 }
                 ModuleManager.GetModule<DataModule>().StreamingRawFrameQueue.Enqueue(frameRaw);
-                //ModuleManager.GetModule<DataModule>().StreamingRawFrameQueue.Enqueue(SevenZip.Helper.DecompressBytes(frameRaw));
             }
         }
         public void Receive()
@@ -74,35 +74,28 @@ namespace Think.Viewer.Module
             if (Client.Connected && stream.CanRead)
             {
                 byte[] frameRaw = null;
-                stream.Read(Int32Bytes, 0, 4);
-                int segRawLen = BitConverter.ToInt32(Int32Bytes);
-               // Debug.LogError($"Receive Idx {Index} SegTotalLen:{BitConverter.ToInt32(Int32Bytes)}");
+                stream.ReadAsync(Int32Bytes, 0, 4).Wait();
+
+                int totalSize = BitConverter.ToInt32(Int32Bytes);
+                Debug.LogError($"Seg {Index} totalSize Size {totalSize}");
 
                 int bytesRead = 0;
-                while( bytesRead < segRawLen)
+                while (bytesRead < totalSize)
                 {
-                    int thisRead = stream.Read(buffer, 0, Math.Min(buffer.Length, segRawLen - bytesRead));
+                    int thisread = stream.Read(buffer, 0, Math.Min(buffer.Length, totalSize - bytesRead));
                     if (frameRaw == null)
                         frameRaw = new byte[0];
-                    Debug.LogWarning("Frame Start Read seg [[ Resize to " + (frameRaw.Length + thisRead));
-                    Array.Resize(ref frameRaw, frameRaw.Length + thisRead);
-                    Debug.LogWarning("Frame Start Read seg [[ Resized to " + (frameRaw.Length) + $" CopyOp bufferSize:{buffer.Length} frameRawSize:{frameRaw.Length} dstOffset:{0 + bytesRead} count:{thisRead}");
-                    Buffer.BlockCopy(buffer, 0, frameRaw, bytesRead, thisRead);
-                    Debug.LogWarning("Frame Start Read seg [[ BlockCopy " + frameRaw.Length);
-                    bytesRead += thisRead;
-                    Debug.LogWarning("Frame Start Read seg ] " + bytesRead);
+                    Array.Resize(ref frameRaw, frameRaw.Length + thisread);
+                    Buffer.BlockCopy(buffer, 0, frameRaw, bytesRead, thisread);
+                    bytesRead += thisread;
                 }
-                //seg loaded
-                //Debug.LogWarning("Receive Seg Count"+frameRaw.Length);
-                if (frameRaw != null)
-                {
-                    //Debug.LogWarning($"Receive Idx {Index} Seg Count {frameRaw.Length}");
 
-                    //
-                    var rawImgBytes = new byte[frameRaw.Length-4-4-4];
-                    Array.Copy(frameRaw, 4 + 4 + 4, rawImgBytes, 0, rawImgBytes.Length);
-                    ModuleManager.GetModule<DataModule>().StreamingRawFrameQueue.Enqueue(rawImgBytes);
-                }
+                int frameHash = BitConverter.ToInt32(frameRaw, 0);
+                int idx = BitConverter.ToInt32(frameRaw, 4);
+                int segSize = BitConverter.ToInt32(frameRaw, 4 + 4);
+                byte[] segFrameRaw = frameRaw.Skip(12).Take(frameRaw.Length - 12).ToArray();
+                ModuleManager.GetModule<DataModule>().MergeSegFrame(frameHash,idx,segFrameRaw);
+                
             }
         }
     }
@@ -151,7 +144,6 @@ namespace Think.Viewer.Module
                     tcpStreamingClients.Add(streamWrapper);
                     await streamWrapper.Client.ConnectAsync(serverPoint.Address, settings.StreamingPort);
                     Debug.LogWarning("StartConnect "+"address"+serverPoint.Address.ToString()+"port:"+ settings.StreamingPort + " total "+ settings.MultiThreadCount);
-                 
                 }
             }
 
