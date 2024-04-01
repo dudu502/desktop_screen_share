@@ -43,45 +43,11 @@ namespace Think.Viewer.Module
         public Setting HostSetting;
         public List<HostNetInfo> HostNetInfos = new List<HostNetInfo>();
         public ConcurrentQueue<byte[]> StreamingRawFrameQueue = new ConcurrentQueue<byte[]>();
+        public ConcurrentQueue<byte[]> StreamingRawAudioQueue = new ConcurrentQueue<byte[]>();
         internal IPEndPoint CurrentEndPoint;
-        public object Sync = new object();
-        public ConcurrentQueue< MergedFrame> MergedFrames = new ConcurrentQueue<MergedFrame>();
+
         public void Initialize()
         {
-            
-        }
-
-        public void MergeSegFrame(int hash, int idx, byte[] raw)
-        {
-            Debug.LogError($"MergeSeg Frame hash:{hash} idx:{idx} raw:{raw}");
-            bool exist=false;
-            MergedFrame frame = null;
-            foreach(var item in MergedFrames)
-            {
-                if (item.Hash == hash)
-                {
-                    exist = true;
-                    frame = item;
-                    break;
-                }
-            }
-            if (!exist)
-            {
-                frame = new MergedFrame(hash, HostSetting.MultiThreadCount);
-                MergedFrames.Enqueue(frame);
-            }
-
-            frame.Result[idx] = raw;
-            frame.TryMerge();
-  
-            if(MergedFrames.TryPeek(out var f))
-            {
-                if (f.FrameRaw != null)
-                {
-                    MergedFrames.TryDequeue(out var t);
-                    StreamingRawFrameQueue.Enqueue(f.FrameRaw);
-                }
-            }
             
         }
     }

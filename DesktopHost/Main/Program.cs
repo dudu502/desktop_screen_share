@@ -1,5 +1,6 @@
 ﻿using Common;
 using Main.Ext;
+using NAudio.Wave;
 using System.Runtime.InteropServices;
 using System.Text;
 using Think.Viewer;
@@ -23,16 +24,25 @@ namespace Main
             MainServerApp app = new MainServerApp(key);
             app.StartServer(Global.setting.HostPort);
             Console.ReadKey();
-
-
-            // Test();
-            // Console.ReadKey();
+            //Test();
         }
 
-        async static void Test()
+        static void Test()
         {
-            ScreenExt.Init(new System.Drawing.Rectangle(0, 0, 2240, 1400),50L);
-            File.WriteAllBytes(Path.Combine(Environment.CurrentDirectory, "1.bytes"), await SevenZip.Helper.CompressBytesAsync(ScreenExt.BitBltCaptureScreenBytes()));
+            var capture = new WasapiLoopbackCapture();
+            capture.DataAvailable += Capture_DataAvailable;
+            capture.StartRecording();
+            Console.ReadKey();
+            ms.Flush();
+            ms.SetLength(0);
+            Console.ReadKey();
+            capture.StopRecording();
+        }
+        static MemoryStream ms = new MemoryStream();
+        private static void Capture_DataAvailable(object? sender, WaveInEventArgs e)
+        {
+            ms.Write(e.Buffer, 0, e.BytesRecorded);
+            Console.WriteLine($"bufferSize:{e.Buffer.Length} recorded size:{e.BytesRecorded} ms.Len:{ms.Length} ms.pos:{ms.Position}");
         }
     }
 }

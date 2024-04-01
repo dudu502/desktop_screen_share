@@ -62,7 +62,7 @@ namespace Main.Ext
         static extern IntPtr GetDesktopWindow();
         [DllImport("user32.dll")]
         static extern IntPtr GetWindowDC(IntPtr hWnd);
-
+        static MemoryStream captureMs = new MemoryStream();
         public static byte[] BitBltCaptureScreenBytes()
         {
             IntPtr desktopHandle = GetDesktopWindow();
@@ -81,6 +81,7 @@ namespace Main.Ext
                 var raw = new byte[ms.Length];
                 ms.Seek(0, SeekOrigin.Begin);
                 ms.Read(raw, 0, raw.Length);
+                captureMs.SetLength(0);
                 return raw;
             }
 

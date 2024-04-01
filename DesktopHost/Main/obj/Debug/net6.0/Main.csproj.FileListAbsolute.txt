@@ -20,3 +20,9 @@ D:\dudu502\desktop_screen_share\DesktopHost\Main\obj\Debug\net6.0\Main.csproj.Co
 D:\dudu502\desktop_screen_share\DesktopHost\Main\bin\Debug\net6.0\LitJson.dll
 D:\dudu502\desktop_screen_share\DesktopHost\Main\bin\Debug\net6.0\Common.dll
 D:\dudu502\desktop_screen_share\DesktopHost\Main\bin\Debug\net6.0\Common.pdb
+D:\dudu502\desktop_screen_share\DesktopHost\Main\bin\Debug\net6.0\NAudio.dll
+D:\dudu502\desktop_screen_share\DesktopHost\Main\bin\Debug\net6.0\NAudio.Asio.dll
+D:\dudu502\desktop_screen_share\DesktopHost\Main\bin\Debug\net6.0\NAudio.Core.dll
+D:\dudu502\desktop_screen_share\DesktopHost\Main\bin\Debug\net6.0\NAudio.Midi.dll
+D:\dudu502\desktop_screen_share\DesktopHost\Main\bin\Debug\net6.0\NAudio.Wasapi.dll
+D:\dudu502\desktop_screen_share\DesktopHost\Main\bin\Debug\net6.0\NAudio.WinMM.dll

@@ -4,6 +4,7 @@ using Protocol.Net;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Net;
@@ -127,12 +128,23 @@ namespace Main.Modules.Host
             {
                 while (captureLooper.TryDequeue(out var action))
                     action?.Invoke();
-                byte[] screenStreamBytes =  ScreenExt.BitBltCaptureScreenBytes();
+                AudioExt.TryStart();
+                byte[] audioBytes = AudioExt.CapturePeriodBytes();
+                byte[] screenStreamBytes = ScreenExt.BitBltCaptureScreenBytes();
                 var stream = NetStreams[0].NetStream;
+                stream.WriteByte(0);
                 stream.Write(BitConverter.GetBytes(screenStreamBytes.Length));
                 stream.Write(screenStreamBytes);
+
+                //if (audioBytes.Length > 0)
+                //{
+                //    stream.WriteByte(1);
+                //    stream.Write(BitConverter.GetBytes(audioBytes.Length));
+                //    BaseApplication.Logger.Log("SendAudio bytes " + audioBytes.Length);
+                //    stream.Write(audioBytes);
+                //}
+
                 stream.Flush();
-             //   Thread.Sleep(10);
             }
         }
         /// <summary>

@@ -45,9 +45,10 @@ namespace Think.Viewer.Module
         public void Receive1()
         {
             var stream = Client.GetStream();
-            if(Client.Connected && stream.CanRead)
+            if (Client.Connected && stream.CanRead)
             {
                 byte[] frameRaw = null;
+                int type = stream.ReadByte();
                 stream.Read(Int32Bytes, 0, 4);
                 int totalLen = BitConverter.ToInt32(Int32Bytes);
                 int bytesRead = 0;
@@ -65,7 +66,10 @@ namespace Think.Viewer.Module
                     bytesRead += thisread;
                     //Debug.LogWarning("Frame Start Read seg ] " + bytesRead);
                 }
-                ModuleManager.GetModule<DataModule>().StreamingRawFrameQueue.Enqueue(frameRaw);
+                if (type == 0)
+                    ModuleManager.GetModule<DataModule>().StreamingRawFrameQueue.Enqueue(frameRaw);
+                //else if(type==1)
+                //    ModuleManager.GetModule<DataModule>().StreamingRawAudioQueue.Enqueue(frameRaw);
             }
         }
         public void Receive()
@@ -94,7 +98,7 @@ namespace Think.Viewer.Module
                 int idx = BitConverter.ToInt32(frameRaw, 4);
                 int segSize = BitConverter.ToInt32(frameRaw, 4 + 4);
                 byte[] segFrameRaw = frameRaw.Skip(12).Take(frameRaw.Length - 12).ToArray();
-                ModuleManager.GetModule<DataModule>().MergeSegFrame(frameHash,idx,segFrameRaw);
+                //ModuleManager.GetModule<DataModule>().MergeSegFrame(frameHash,idx,segFrameRaw);
                 
             }
         }

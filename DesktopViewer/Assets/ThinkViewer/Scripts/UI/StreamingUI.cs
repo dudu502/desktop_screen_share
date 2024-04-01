@@ -27,6 +27,7 @@ namespace Think.Viewer.UI
         }
         public RawImage rawImage;
         public Slider qualitySlider;
+        public AudioSource audioSource;
         private DataModule dataModule;
         private PointerEventData pointerEventData;
         public InputActionReference shiftButtonAction, selectButtonAction,triggerButtonAction;
@@ -68,6 +69,9 @@ namespace Think.Viewer.UI
         bool isKeyDown = false;
         void Start()
         {
+            //streamingAudioClip = AudioClip.Create("host", 100 * 1024, 2, 48000, true);
+            //audioSource.clip = streamingAudioClip;
+
             dataModule = ModuleManager.GetModule<DataModule>();
             screenRect = new Rect(dataModule.HostSetting.CaptureX, dataModule.HostSetting.CaptureY, dataModule.HostSetting.CaptureWidth, dataModule.HostSetting.CaptureHeight);
             rawImage.texture = new Texture2D(2,2, TextureFormat.ARGB32, false);
@@ -176,16 +180,49 @@ namespace Think.Viewer.UI
                 GameClientNetwork.Instance.SendUnconnectedRequest(pid, PtStreamingOp.Write(op));
             }
         }
-        
+        public float[] ConvertByteArrayToFloatArray(byte[] byteArray, int channels)
+        {
+            // 16位PCM音频的每个样本由2个字节表示  
+            int sampleSize = 2;
+            // 计算样本数  
+            int sampleCount = byteArray.Length / (sampleSize * channels);
+            // 创建float数组来存储结果  
+            float[] floatArray = new float[sampleCount];
+
+            // 遍历所有样本  
+            for (int i = 0; i < sampleCount; i++)
+            {
+                // 读取两个字节并转换为short  
+                short sample = BitConverter.ToInt16(byteArray, i * sampleSize * channels);
+                // 归一化样本值到[-1.0f, 1.0f]范围  
+                float normalizedSample = sample / (float)short.MaxValue;
+                // 存储归一化后的样本值  
+                floatArray[i] = normalizedSample;
+            }
+
+            return floatArray;
+        }
         // Update is called once per frame
         void Update()
         {
             inputFsm.Update();
-            while (dataModule != null && dataModule.StreamingRawFrameQueue != null && dataModule.StreamingRawFrameQueue.TryDequeue(out byte[] raw))
-            {
-                ((Texture2D)rawImage.texture).LoadImage(raw);
-            }
 
+            if(dataModule!=null)
+            {
+                while ( dataModule.StreamingRawFrameQueue.TryDequeue(out byte[] raw))
+                {
+                    ((Texture2D)rawImage.texture).LoadImage(raw);
+                }
+
+                //while (dataModule.StreamingRawAudioQueue.TryDequeue(out byte[] audioBytes))
+                //{
+                //    streamingAudioClip = AudioClip.Create("CustomAudioClip", audioBytes.Length, 2, 48000, false);
+                //    streamingAudioClip.SetData(ConvertByteArrayToFloatArray(audioBytes, 2), 0);
+       
+                //    audioSource.clip = streamingAudioClip;
+                //    audioSource.PlayScheduled(0);
+                //}
+            }
         }
     }
 }
