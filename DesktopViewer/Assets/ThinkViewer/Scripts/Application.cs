@@ -21,7 +21,6 @@ namespace Think.Viewer
         NetworkController controller;
         void Start()
         {
-            GameClientNetwork.Instance.Launch();
             GameClientNetwork.Instance.Start();
             ModuleManager.Add(uiModule);
             ModuleManager.Add(new MessageModule());

@@ -108,6 +108,7 @@ namespace Main.Modules.Host
                         EventDispatcher<C2S, StreamRequest>.DispatchEvent((C2S)pid, new StreamRequest(UUID,stream, receiveRaw));
                     }
                 }
+                Thread.Sleep(10);
             }
         }
 
@@ -129,13 +130,14 @@ namespace Main.Modules.Host
                 while (captureLooper.TryDequeue(out var action))
                     action?.Invoke();
                 AudioExt.TryStart();
-                byte[] audioBytes = AudioExt.CapturePeriodBytes();
+                
                 byte[] screenStreamBytes = ScreenExt.BitBltCaptureScreenBytes();
                 var stream = NetStreams[0].NetStream;
                 stream.WriteByte(0);
                 stream.Write(BitConverter.GetBytes(screenStreamBytes.Length));
                 stream.Write(screenStreamBytes);
 
+                //byte[] audioBytes = AudioExt.CapturePeriodBytes();
                 //if (audioBytes.Length > 0)
                 //{
                 //    stream.WriteByte(1);

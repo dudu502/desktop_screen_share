@@ -1,41 +1,52 @@
-﻿using Protocol.Net;
+//Creation time:2024/4/8 16:07:25
 using System;
-namespace Net
+using System.Collections;
+using System.Collections.Generic;
+using Protocol.Net;
+
+namespace Development.Net.Pt
 {
-    public class PtMessagePackage:IDisposable
+public class PtMessagePackage
+{
+    public byte __tag__ { get;private set;}
+
+	public ushort MessageId{ get;private set;}
+	public byte[] Content { get;private set;}
+	public byte[] ToIp{ get;private set;}
+	public int ToPort{ get;private set;}
+	public byte[] FromIp{ get;private set;}
+	public int FromPort{ get;private set;}
+	   
+    public PtMessagePackage SetMessageId(ushort value){MessageId=value; __tag__|=1; return this;}
+	public PtMessagePackage SetContent(byte[] value){Content=value; __tag__|=2; return this;}
+	public PtMessagePackage SetToIp(byte[] value){ToIp=value; __tag__|=4; return this;}
+	public PtMessagePackage SetToPort(int value){ToPort=value; __tag__|=8; return this;}
+	public PtMessagePackage SetFromIp(byte[] value){FromIp=value; __tag__|=16; return this;}
+	public PtMessagePackage SetFromPort(int value){FromPort=value; __tag__|=32; return this;}
+	
+    public bool HasMessageId(){return (__tag__&1)==1;}
+	public bool HasContent(){return (__tag__&2)==2;}
+	public bool HasToIp(){return (__tag__&4)==4;}
+	public bool HasToPort(){return (__tag__&8)==8;}
+	public bool HasFromIp(){return (__tag__&16)==16;}
+	public bool HasFromPort(){return (__tag__&32)==32;}
+	
+    public static byte[] Write(PtMessagePackage data)
     {
-        public ushort MessageId;
-        public bool HasContent { private set; get; }
-        byte[] m_Content;
-
-        public byte[] Content {
-            set {
-                if (value != null)
-                {
-                    m_Content = value;
-                    HasContent = true;
-                }                  
-            }
-
-            get {
-                return m_Content;
-            }
-        }
-
-        public object ExtraObj = null;
-        public static PtMessagePackage Build(ushort messageId)
+        using(ByteBuffer buffer = new ByteBuffer())
         {
-            PtMessagePackage package = new PtMessagePackage();
-            package.MessageId = messageId;
-            return package;
+            buffer.WriteByte(data.__tag__);
+			if(data.HasMessageId())buffer.WriteUInt16(data.MessageId);
+			if(data.HasContent())buffer.WriteBytes(data.Content);
+			if(data.HasToIp())buffer.WriteBytes(data.ToIp);
+			if(data.HasToPort())buffer.WriteInt32(data.ToPort);
+			if(data.HasFromIp())buffer.WriteBytes(data.FromIp);
+			if(data.HasFromPort())buffer.WriteInt32(data.FromPort);
+			
+            return buffer.GetRawBytes();
         }
-        public static PtMessagePackage Build(ushort messageId,byte[] content)
-        {
-            PtMessagePackage package = Build(messageId);
-            package.Content = content;
-            return package;
-        }
-        public static PtMessagePackage BuildParams(ushort messageId,params object[] pars)
+    }
+        public static PtMessagePackage BuildParams(ushort messageId, params object[] pars)
         {
             using (ByteBuffer buffer = new ByteBuffer())
             {
@@ -88,48 +99,40 @@ namespace Net
                     }
                     else
                     {
-                        throw new Exception("BuildParams Type is not supported. "+iType.ToString());
+                        throw new Exception("BuildParams Type is not supported. " + iType.ToString());
                     }
                 }
                 return Build(messageId, buffer.GetRawBytes());
             }
 
         }
+        public static PtMessagePackage Build(ushort messageId)
+        {
+            PtMessagePackage package = new PtMessagePackage();
+            package.SetMessageId(messageId);
+            return package;
+        }
+        public static PtMessagePackage Build(ushort messageId, byte[] content)
+        {
+            PtMessagePackage package = Build(messageId);
+            package.SetContent(content);
+            return package;
+        }
         public static PtMessagePackage Read(byte[] bytes)
+    {
+        using(ByteBuffer buffer = new ByteBuffer(bytes))
         {
-            using (ByteBuffer buffer = new ByteBuffer(bytes))
-            {
-                PtMessagePackage info = new PtMessagePackage();
-                info.MessageId = buffer.ReadUInt16();
-                info.HasContent = buffer.ReadBool();
-                if (info.HasContent)
-                {
-                    info.Content = buffer.ReadBytes();
-                }
-                return info;
-            }
-        }
-        public static byte[] Write(PtMessagePackage info)
-        {
-            using (ByteBuffer buffer = new ByteBuffer())
-            {
-                buffer.WriteUInt16(info.MessageId);
-                buffer.WriteBool(info.HasContent);
-                if (info.HasContent)
-                {
-                    buffer.WriteBytes(info.Content);
-                }
-                return buffer.GetRawBytes();
-            }         
-        }
-
-
-        public void Dispose()
-        {
-            m_Content = null;
-            MessageId = 0;
-            HasContent = false;
-            ExtraObj = null;
-        }
+            PtMessagePackage data = new PtMessagePackage();
+            data.__tag__ = buffer.ReadByte();
+			if(data.HasMessageId())data.MessageId = buffer.ReadUInt16();
+			if(data.HasContent())data.Content = buffer.ReadBytes();
+			if(data.HasToIp())data.ToIp = buffer.ReadBytes();
+			if(data.HasToPort())data.ToPort = buffer.ReadInt32();
+			if(data.HasFromIp())data.FromIp = buffer.ReadBytes();
+			if(data.HasFromPort())data.FromPort = buffer.ReadInt32();
+			
+            return data;
+        }       
     }
+}
 }

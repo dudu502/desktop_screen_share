@@ -1,4 +1,4 @@
-﻿using SevenZip.Compression.LZMA;
+﻿
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -62,7 +62,7 @@ namespace Main.Ext
         static extern IntPtr GetDesktopWindow();
         [DllImport("user32.dll")]
         static extern IntPtr GetWindowDC(IntPtr hWnd);
-        static MemoryStream captureMs = new MemoryStream();
+
         public static byte[] BitBltCaptureScreenBytes()
         {
             IntPtr desktopHandle = GetDesktopWindow();
@@ -81,40 +81,8 @@ namespace Main.Ext
                 var raw = new byte[ms.Length];
                 ms.Seek(0, SeekOrigin.Begin);
                 ms.Read(raw, 0, raw.Length);
-                captureMs.SetLength(0);
                 return raw;
             }
-
         }
-
-
-        public static byte[] ZipBitBltCaptureScreenBytes()
-        {
-            IntPtr desktopHandle = GetDesktopWindow();
-            IntPtr desktopDC = GetWindowDC(desktopHandle);
-            Size screenSize = new Size(screenBounds.Width, screenBounds.Height);
-            Bitmap screenImage = new Bitmap(screenSize.Width, screenSize.Height);
-            Graphics g = Graphics.FromImage(screenImage);
-
-            IntPtr gHdc = g.GetHdc();
-            BitBlt(gHdc, screenBounds.X, screenBounds.Y, screenSize.Width, screenSize.Height, desktopDC, 0, 0, 0x00CC0020); // SRCCOPY
-            g.ReleaseHdc(gHdc);
-
-            using (var ms = new MemoryStream())
-            {
-                screenImage.Save(ms, jpegEncoder, encoderParameters);
-                //var raw = new byte[ms.Length];
-                //ms.Seek(0, SeekOrigin.Begin);
-                //ms.Read(raw, 0, raw.Length);
-
-                using(Stream outStream = new MemoryStream())
-                {
-                    SevenZip.Helper.Compress(ms, outStream);
-                    return SevenZip.Helper.StreamToByteArray(outStream);
-                }
-            }
-
-        }
-
     }
 }

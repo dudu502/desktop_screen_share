@@ -1,20 +1,22 @@
 ﻿using UnityEngine;
-using Net;
 using System.Net;
 using System.Collections.Concurrent;
-using LiteNetLib;
-using System.Threading;
 using System;
 using Think.Viewer.Common;
 using Think.Viewer.Event;
 using Think.Viewer.Manager;
 using Think.Viewer.Module;
+using Development.Net.Pt;
+using static UnityEngine.Rendering.ReloadAttribute;
 
 namespace Think.Viewer.Net
 {
     public class GameClientNetwork
     {
         static GameClientNetwork _Inst = null;
+        private UDPManager _client;
+        public byte[] localIp;
+        public int localPort = 50000;
         public static GameClientNetwork Instance
         {
             get
@@ -24,185 +26,60 @@ namespace Think.Viewer.Net
                 return _Inst;
             }
         }
-        NetManager m_ClientMgr;
-        EventBasedNetListener m_Listener;
+
         private ConcurrentQueue<PtMessagePackage> m_QueueMsg;
-        private Thread m_PollEvtThread;
-        private bool m_BlPollThreadState;
-        private long m_HeartBeatTicks = 0;
-        private DateTime m_HeartBeatDateTime;
         private GameClientNetwork()
         {
             m_QueueMsg = new ConcurrentQueue<PtMessagePackage>();
         }
         public void CloseClient()
         {
-            m_BlPollThreadState = false;
-            if (m_PollEvtThread != null)
-            {
-                try
-                {
-                    m_PollEvtThread.Abort();
-                    m_PollEvtThread = null;
-                }
-                catch (Exception)
-                {
 
-                }
-            }
-
-            if (m_ClientMgr != null)
-            {
-                m_ClientMgr.DisconnectAll();
-                m_ClientMgr.Stop();
-                m_ClientMgr = null;
-            }
-            if (m_Listener != null)
-            {
-                m_Listener.ClearConnectionRequestEvent();
-                m_Listener.ClearDeliveryEvent();
-                m_Listener.ClearNetworkErrorEvent();
-                m_Listener.ClearNetworkLatencyUpdateEvent();
-                m_Listener.ClearNetworkReceiveEvent();
-                m_Listener.ClearNetworkReceiveUnconnectedEvent();
-                m_Listener.ClearPeerConnectedEvent();
-                m_Listener.ClearPeerDisconnectedEvent();
-                m_Listener = null;
-            }
         }
 
-        public void Launch()
-        {
-            m_HeartBeatTicks = 0;
-            m_Listener = new EventBasedNetListener();
-            m_ClientMgr = new NetManager(m_Listener);
-            m_ClientMgr.UnconnectedMessagesEnabled = true;
-            m_Listener.ConnectionRequestEvent += OnConnectionRequestEvent;
-            m_Listener.DeliveryEvent += OnDeliveryEvent;
-            m_Listener.NetworkErrorEvent += OnNetworkErrorEvent;
-            m_Listener.NetworkLatencyUpdateEvent += OnNetworkLatencyUpdateEvent;
-            m_Listener.NetworkReceiveEvent += OnNetworkReceiveEvent;
-            m_Listener.NetworkReceiveUnconnectedEvent += OnNetworkReceiveUnconnectedEvent;
-            m_Listener.PeerConnectedEvent += OnPeerConnectedEvent;
-            m_Listener.PeerDisconnectedEvent += OnPeerDisconnectedEvent;
-        }
 
-        private void OnPeerDisconnectedEvent(NetPeer peer, DisconnectInfo disconnectInfo)
-        {
-            Debug.Log("OnPeerDisconnectedEvent");
-            CloseClient();
-        }
 
-        private void OnPeerConnectedEvent(NetPeer peer)
-        {
-            Debug.Log("OnPeerConnectedEvent");
-        }
-
-        private void OnNetworkReceiveUnconnectedEvent(IPEndPoint remoteEndPoint, NetPacketReader reader, UnconnectedMessageType messageType)
-        {
-            byte[] bytes = new byte[reader.AvailableBytes];
-            reader.GetBytes(bytes, reader.AvailableBytes);
-            PtMessagePackage package = PtMessagePackage.Read(bytes);
-            package.ExtraObj = remoteEndPoint;
-            m_QueueMsg.Enqueue(package);
-            reader.Recycle();
-        }
-
-        private void OnNetworkReceiveEvent(NetPeer peer, NetPacketReader reader, DeliveryMethod deliveryMethod)
-        {
-            byte[] bytes = new byte[reader.AvailableBytes];
-            reader.GetBytes(bytes, reader.AvailableBytes);
-            PtMessagePackage package = PtMessagePackage.Read(bytes);
-            m_QueueMsg.Enqueue(package);
-            reader.Recycle();
-        }
-
-        private void OnNetworkLatencyUpdateEvent(NetPeer peer, int latency)
-        {
-            //Debug.Log("OnNetworkLatencyUpdateEvent");
-        }
-
-        private void OnNetworkErrorEvent(IPEndPoint endPoint, System.Net.Sockets.SocketError socketError)
-        {
-            Debug.Log("OnNetworkErrorEvent");
-            CloseClient();
-        }
-
-        private void OnDeliveryEvent(NetPeer peer, object userData)
-        {
-            Debug.Log("OnDeliveryEvent");
-        }
-
-        private void OnConnectionRequestEvent(ConnectionRequest request)
-        {
-            Debug.Log("OnConnectionRequestEvent");
-        }
-
-        public void Start(string ip, int port, string key)
-        {
-            m_ClientMgr.Start();
-            m_ClientMgr.Connect(ip, port, key);
-            CreateThreads();
-        }
         public void Start()
         {
-            m_ClientMgr.Start(50000);
-            CreateThreads();
+            _client = new UDPManager(localPort);
+            _client.Start();
+            _client.MessageReceived += OnMessageReceived;
         }
-        void CreateThreads()
+      
+        void OnMessageReceived(PtMessagePackage package)
         {
-            if (m_PollEvtThread == null)
-            {
-                m_BlPollThreadState = true;
-                m_PollEvtThread = new Thread(OnPollEvt);
-                m_PollEvtThread.IsBackground = true;
-                m_PollEvtThread.Start();
-            }
+            EventDispatcher<S2C, PtMessagePackage>.DispatchEvent((S2C)package.MessageId, package);
         }
-        void OnPollEvt(object obj)
-        {
-            while (m_BlPollThreadState)
-            {
-                m_ClientMgr.PollEvents();
-                Thread.Sleep(15);
-                TickDispatchMessages();
-                TickHeartBeating();
-            }
-            try
-            {
-                m_PollEvtThread.Abort();
-                m_PollEvtThread = null;
-            }
-            catch (Exception) { }
 
-        }
-        public void SendRequest(PtMessagePackage package)
+
+        public void SendUnconnectedRequestRaw(PtMessagePackage package)
         {
-            lock (this)
-                NetStreamUtil.SendToAll(m_ClientMgr, package);
-        }
-        public void SendRequest(C2S c2SMessageId, params object[] p)
-        {
-            PtMessagePackage package = PtMessagePackage.BuildParams((ushort)c2SMessageId, p);
-            SendRequest(package);
-        }
-        public void SendUnconnectedRequest(PtMessagePackage package, IPEndPoint remotePoint)
-        {
-            if (m_ClientMgr != null)
-                m_ClientMgr.SendUnconnectedMessage(PtMessagePackage.Write(package), remotePoint);
+            if (_client != null)
+            {
+                _client.StartSendAsync(package);
+            }
         }
         public void SendUnconnectedRequest(C2S pid, byte[] raw)
         {
             var currentRemoteEndPoint = ModuleManager.GetModule<DataModule>().CurrentEndPoint;
             if (currentRemoteEndPoint != null)
-                SendUnconnectedRequest(PtMessagePackage.Build((ushort)pid, raw), currentRemoteEndPoint);
+                SendUnconnectedRequestRaw(PtMessagePackage.Build((ushort)pid, raw)
+                    .SetToIp(currentRemoteEndPoint.Address.GetAddressBytes())
+                    .SetToPort(currentRemoteEndPoint.Port)
+                    .SetFromIp(localIp)
+                    .SetFromPort(localPort));
         }
         public void SendUnconnectedRequest(C2S pid, params object[] p)
         {
             var currentRemoteEndPoint = ModuleManager.GetModule<DataModule>().CurrentEndPoint;
             if (currentRemoteEndPoint != null)
-                SendUnconnectedRequest(PtMessagePackage.BuildParams((ushort)pid, p), currentRemoteEndPoint);
+                SendUnconnectedRequestRaw(PtMessagePackage.BuildParams((ushort)pid, p)
+                    .SetToIp(currentRemoteEndPoint.Address.GetAddressBytes())
+                    .SetToPort(currentRemoteEndPoint.Port)
+                    .SetFromIp(localIp)
+                    .SetFromPort(localPort));
         }
+
         public void TickDispatchMessages()
         {
             while (m_QueueMsg.Count > 0)
@@ -219,26 +96,6 @@ namespace Think.Viewer.Net
                     }
                 }
             }
-        }
-
-        /// <summary>
-        /// 心跳机制
-        /// 每10秒进行一次
-        /// </summary>
-        void TickHeartBeating()
-        {
-            //心跳10 secs
-            if (m_HeartBeatTicks == 0)
-            {
-                m_HeartBeatDateTime = DateTime.Now;
-            }
-            else if (m_HeartBeatTicks > 100000000)//10s = 10*1000*10000
-            {
-                m_HeartBeatTicks -= 100000000;
-                SendRequest(PtMessagePackage.Build((ushort)C2S.Heartbeat, null));
-            }
-            m_HeartBeatTicks += (DateTime.Now - m_HeartBeatDateTime).Ticks;
-            m_HeartBeatDateTime = DateTime.Now;
-        }
+        }     
     }
 }

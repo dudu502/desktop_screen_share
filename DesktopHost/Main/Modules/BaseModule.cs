@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using LiteNetLib;
+﻿
+using Development.Net.Pt;
 using Think.Viewer.Core;
 
 namespace Think.Viewer.Modules
@@ -17,10 +15,13 @@ namespace Think.Viewer.Modules
         {
             return (T)ApplicationInstance;
         }
-        public NetManager GetNetManager() {
-            return ApplicationInstance.GetNetManager();     
+        public void Relay(PtMessagePackage msg)
+        {
+            if (ApplicationInstance!=null)
+            {
+                ApplicationInstance.SendAsync(msg);
+            }
         }
-
         public static Dictionary<Type,BaseModule> _modules = new Dictionary<Type, BaseModule>();
         public static T GetModule<T>() where T:BaseModule
         {

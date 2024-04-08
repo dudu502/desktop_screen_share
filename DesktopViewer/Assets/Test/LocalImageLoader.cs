@@ -19,10 +19,6 @@ public class LocalImageLoader : MonoBehaviour
     async void LoadImage()
     {
         byte[] bytes = _imgAssets.bytes;
-        if (needDecompress)
-        {
-            bytes = await SevenZip.Helper.DecompressBytesAsync(bytes);
-        }
         ((Texture2D)(_img.texture)).LoadImage(bytes);
     }
 

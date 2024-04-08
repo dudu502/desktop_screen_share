@@ -2,12 +2,12 @@
 using Think.Viewer.Event;
 using UnityEngine;
 using Think.Viewer.Common;
-using Net;
 using Protocol.Net;
 using System.Collections.Generic;
 using ThinkViewer.Scripts.Net.Data;
 using UnityEngine.UIElements;
 using System.Net;
+using Development.Net.Pt;
 
 namespace Think.Viewer.Module
 {
@@ -46,9 +46,11 @@ namespace Think.Viewer.Module
                 string settingsJson = buffer.ReadString();
                 ModuleManager.GetModule<DataModule>().HostSetting = LitJson.JsonMapper.ToObject<Setting>(settingsJson);
                 Debug.LogWarning("Setting Info " + ModuleManager.GetModule<DataModule>().HostSetting.ToString());
-                ModuleManager.GetModule<DataModule>().CurrentEndPoint = (IPEndPoint)message.ExtraObj;
-                ModuleManager.GetModule<StreamingModule>().StartConnect((IPEndPoint)message.ExtraObj);
+
             }
+
+            ModuleManager.GetModule<DataModule>().CurrentEndPoint = new IPEndPoint(new IPAddress(message.FromIp),message.FromPort);
+            ModuleManager.GetModule<StreamingModule>().StartConnect(ModuleManager.GetModule<DataModule>().CurrentEndPoint);
         }
     }
 }

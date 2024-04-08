@@ -1,9 +1,6 @@
-﻿using LiteNetLib;
+﻿using Development.Net.Pt;
 using Main.Ext;
 using Main.Modules.Host;
-using Net;
-using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Net;
@@ -19,10 +16,21 @@ namespace Main
 {
     public class MainServerApp : BaseApplication
     {
-        public const int MAX_CONNECT_COUNT = 128;
         public MainServerApp(string key) : base(key)
         {
-            m_Network.UnconnectedMessagesEnabled = true;
+
+        }
+
+        public override void StartServer(int port)
+        {
+            base.StartServer(port);
+            manager.MessageReceived += OnMessageReceive;
+        }
+
+        private void OnMessageReceive(PtMessagePackage obj)
+        {
+            Logger.Log($"OnMessageReceive pid:{obj.MessageId} fromIp:{new IPAddress(obj.FromIp)} fromPort:{obj.FromPort}");
+            EventDispatcher<C2S, PtMessagePackage>.DispatchEvent((C2S)obj.MessageId, obj);
         }
 
         protected override void SetUp()
@@ -31,7 +39,6 @@ namespace Main
             SetUpConfigs();
             AddModule(new CaptureHostModule(this));
             AddModule(new RequestProcessModule(this));
-            AddModule(new HeartbeatModule(this));
         }
         void SetUpConfigs()
         {
@@ -61,29 +68,7 @@ namespace Main
             Rectangle rectangle = new Rectangle(Global.setting.CaptureX, Global.setting.CaptureY, Global.setting.CaptureWidth, Global.setting.CaptureHeight);
             ScreenExt.Init(rectangle, (long)Convert.ToInt32(Global.setting.StreamingQuality));
         }
-        protected override void OnConnectionRequestEvent(ConnectionRequest request)
-        {
-            base.OnConnectionRequestEvent(request);
-        }
-        protected override void OnNetworkReceiveUnconnectedEvent(IPEndPoint remoteEndPoint, NetPacketReader reader, UnconnectedMessageType messageType)
-        {
-            base.OnNetworkReceiveUnconnectedEvent(remoteEndPoint, reader, messageType);
-            byte[] bytes = new byte[reader.AvailableBytes];
-            reader.GetBytes(bytes, reader.AvailableBytes);
-            PtMessagePackage package = PtMessagePackage.Read(bytes);
-            //Logger.Log($"Receive event from {remoteEndPoint} ProtocolId:C2S.{(C2S)package.MessageId}");
-            EventDispatcher<C2S, UnconnectedNetMessageEvt>.DispatchEvent((C2S)package.MessageId, new UnconnectedNetMessageEvt(remoteEndPoint, package.Content));
-            reader.Recycle();
-        }
-        protected override void OnPeerConnectedEvent(NetPeer peer)
-        {
-            base.OnPeerConnectedEvent(peer);
-            Logger.Log(string.Format("PeerId:{0} Connected.[{1}/{2}]", peer.Id, m_Network.ConnectedPeerList.Count, MAX_CONNECT_COUNT));
-        }
-        protected override void OnPeerDisconnectedEvent(NetPeer peer, DisconnectInfo disconnectInfo)
-        {
-            base.OnPeerDisconnectedEvent(peer, disconnectInfo);
-            Logger.LogWarning(string.Format("PeerId:{0} DisConnected.[{1}/{2}] DisconnectReason:{3} SocketError:{4}", peer.Id, m_Network.ConnectedPeerList.Count, MAX_CONNECT_COUNT, disconnectInfo.Reason.ToString(), disconnectInfo.SocketErrorCode.ToString()));
-        }
+
+       
     }
 }
